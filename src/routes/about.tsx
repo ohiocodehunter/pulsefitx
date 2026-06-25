@@ -3,7 +3,7 @@ import { SiteHeader } from "@/components/landing/site-header";
 import { SiteFooter } from "@/components/landing/site-footer";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n";
-import { ArrowRight, Linkedin, ShieldCheck, Heart, Globe2 } from "lucide-react";
+import { ArrowRight, Linkedin, ShieldCheck, Heart, Globe2, Github } from "lucide-react";
 import founderImg from "@/assets/team/founder.jpg";
 
 export const Route = createFileRoute("/about")({
@@ -82,8 +82,17 @@ function AboutPage() {
                   <Linkedin className="h-3.5 w-3.5" />
                   {t("about.dev.linkedin")}
                 </a>
+                <a
+                  href="https://github.com/ohiocodehunter"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/60 px-4 py-2 text-xs font-semibold hover:border-primary/40 hover:text-primary"
+                >
+                  <Github className="h-3.5 w-3.5" />
+                  {t("about.dev.github")}
+                </a>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-primary">
-                  <Globe2 className="h-3 w-3" /> Ohio, USA
+                  <Globe2 className="h-3 w-3" /> {t("about.dev.location")}
                 </span>
               </div>
             </div>
