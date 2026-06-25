@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { Utensils, Sparkles, X, Loader2, Lightbulb } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Utensils, Sparkles, X, Loader2, Lightbulb, Trash2, History } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,10 @@ import { useProfile } from "@/lib/profile-context";
 import { generateMealPlan } from "@/lib/ai.functions";
 import { toast } from "sonner";
 import { useT } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth-context";
+import {
+  saveMealPlan, listMealPlans, deleteMealPlan, type SavedMealPlan,
+} from "@/lib/firestore-data";
 
 export const Route = createFileRoute("/_authenticated/meals")({
   head: () => ({ meta: [{ title: "Meal Planner - PulsefitX" }] }),
@@ -19,12 +23,19 @@ type Plan = Awaited<ReturnType<typeof generateMealPlan>>;
 const COMMON = ["Rice", "Eggs", "Milk", "Bread", "Dal", "Chicken", "Paneer", "Oats", "Banana", "Roti", "Curd", "Peanut Butter"];
 
 function Meals() {
+  const { user } = useAuth();
   const { profile } = useProfile();
   const { t: tr, lang } = useT();
   const [foods, setFoods] = useState<string[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [plan, setPlan] = useState<Plan | null>(null);
+  const [saved, setSaved] = useState<SavedMealPlan[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+    listMealPlans(user.uid).then(setSaved).catch(() => {});
+  }, [user]);
 
   const addFood = (f: string) => {
     const v = f.trim();
@@ -43,8 +54,30 @@ function Meals() {
         lang,
       }});
       setPlan(r);
+      // Auto-save so the plan survives page reloads / closing the tab.
+      if (user) {
+        const entry: SavedMealPlan = {
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          createdAt: Date.now(),
+          foods: [...foods],
+          plan: r,
+        };
+        try {
+          await saveMealPlan(user.uid, entry);
+          setSaved((s) => [entry, ...s]);
+        } catch {
+          /* ignore — plan still visible in memory */
+        }
+      }
     } catch (e) { toast.error((e as Error).message); }
     finally { setBusy(false); }
+  };
+
+  const removeSaved = async (id: string) => {
+    if (!user) return;
+    await deleteMealPlan(user.uid, id);
+    setSaved((s) => s.filter((p) => p.id !== id));
+    toast.success(tr("meals.deleted") || "Deleted");
   };
 
   return (
@@ -132,6 +165,40 @@ function Meals() {
           </motion.section>
         )}
       </AnimatePresence>
+
+      {saved.length > 0 && (
+        <section className="space-y-3">
+          <div className="flex items-center gap-2 text-sm font-bold">
+            <History className="h-4 w-4 text-primary" /> {tr("meals.saved") || "Saved plans"}
+            <span className="text-[10px] font-normal text-muted-foreground">({saved.length})</span>
+          </div>
+          <ul className="space-y-2">
+            {saved.map((s) => {
+              const p = s.plan as Plan;
+              const date = new Date(s.createdAt);
+              const isOpen = plan === p;
+              return (
+                <li key={s.id} className="rounded-2xl border border-border/60 bg-card/70 p-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <button onClick={() => setPlan(p)} className="min-w-0 flex-1 text-left">
+                      <div className="truncate text-sm font-semibold">{p?.summary?.slice(0, 80) || "Meal plan"}</div>
+                      <div className="text-[11px] text-muted-foreground">
+                        {date.toLocaleString()} · {s.foods.slice(0, 4).join(", ")}{s.foods.length > 4 ? "…" : ""}
+                      </div>
+                    </button>
+                    <Button variant="ghost" size="sm" onClick={() => setPlan(p)} disabled={isOpen}>
+                      {tr("meals.view") || "View"}
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => removeSaved(s.id)} title="Delete">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }
