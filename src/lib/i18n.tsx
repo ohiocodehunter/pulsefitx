@@ -340,6 +340,17 @@ const en: Dict = {
   "streaks.title": "Your Streak",
   "streaks.days": "consecutive days logged",
   "streaks.keep": "Keep logging your meals, water, or steps every day to grow your streak.",
+
+  "android.badge": "Android App Available",
+  "android.title": "Take PulsefitX with you, everywhere.",
+  "android.subtitle": "The native Android app brings your AI coach, meal planner and activity tracking to your pocket — with offline logging and instant notifications.",
+  "android.b1": "Instant meal & water logging in one tap",
+  "android.b2": "Secure Google Sign-In with your existing account",
+  "android.b3": "Syncs in real time with the web dashboard",
+  "android.download": "Download APK",
+  "android.requirements": "Android 8.0+ • 12 MB",
+  "android.note": "iOS app is coming soon. Until then, add PulsefitX to your home screen from Safari for an app-like experience.",
+  "android.steps": "steps today",
 };
 
 const ja: Dict = {
