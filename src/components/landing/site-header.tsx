@@ -24,11 +24,11 @@ export function SiteHeader() {
           <Link to="/" hash="plans" className="text-foreground/70 hover:text-foreground">{t("nav.plans")}</Link>
           <Link to="/about" className="text-foreground/70 hover:text-foreground">{t("nav.about")}</Link>
         </nav>
-        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
           <LanguageSwitcher />
           {isAuthed ? (
             <Link to="/dashboard">
-              <Button variant="hero" size="sm">{t("app.nav.dashboard")}</Button>
+              <Button variant="hero" size="sm" className="px-2.5 text-xs sm:px-3 sm:text-sm">{t("app.nav.dashboard")}</Button>
             </Link>
           ) : (
             <>
@@ -36,7 +36,7 @@ export function SiteHeader() {
                 <Button variant="ghost" size="sm">{t("nav.login")}</Button>
               </Link>
               <Link to="/auth" className="hidden sm:inline-flex">
-                <Button variant="hero" size="sm">{t("nav.getStarted")}</Button>
+                <Button variant="hero" size="sm" className="px-2.5 text-xs sm:px-3 sm:text-sm">{t("nav.getStarted")}</Button>
               </Link>
             </>
           )}
