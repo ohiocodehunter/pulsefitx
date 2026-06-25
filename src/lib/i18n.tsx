@@ -271,6 +271,14 @@ const en: Dict = {
   "meals.addOne": "Add at least one food",
   "meals.yourPlan": "Your AI Plan",
   "meals.coachTips": "Coach tips",
+  "meals.saved": "Saved plans",
+  "meals.view": "View",
+  "meals.modify": "Modify",
+  "meals.savedToast": "Plan saved to history",
+  "meals.deleted": "Plan deleted",
+  "meals.modifyHint": "Edit foods and regenerate to update",
+  "common.confirm": "Confirm",
+  "common.cancel": "Cancel",
 
   // Profile
   "profile.title": "Your Profile",
@@ -620,6 +628,14 @@ const ja: Dict = {
   "meals.addOne": "少なくとも1つの食材を追加してください",
   "meals.yourPlan": "あなたのAIプラン",
   "meals.coachTips": "コーチのヒント",
+  "meals.saved": "保存済みプラン",
+  "meals.view": "表示",
+  "meals.modify": "編集",
+  "meals.savedToast": "プランを履歴に保存しました",
+  "meals.deleted": "プランを削除しました",
+  "meals.modifyHint": "食材を編集して再生成してください",
+  "common.confirm": "確認",
+  "common.cancel": "キャンセル",
 
   // Profile
   "profile.title": "プロフィール",
