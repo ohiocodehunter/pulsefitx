@@ -72,9 +72,7 @@ const FOODS: Food[] = [
 ];
 
 type MealKey = "breakfast" | "lunch" | "snack" | "dinner";
-const MEAL_LABEL: Record<MealKey, string> = {
-  breakfast: "Breakfast", lunch: "Lunch", snack: "Snack", dinner: "Dinner",
-};
+const MEAL_KEYS: MealKey[] = ["breakfast", "lunch", "snack", "dinner"];
 
 type MealEntry = {
   id: string; meal: MealKey; name: string; servings: number;
@@ -84,6 +82,7 @@ type MealEntry = {
 function NutritionPage() {
   const { user } = useAuth();
   const { profile } = useProfile();
+  const { t: tr } = useT();
   const date = todayKey();
   const [log, setLog] = useState<DailyLog | null>(null);
   const [week, setWeek] = useState<DailyLog[]>([]);
@@ -118,6 +117,12 @@ function NutritionPage() {
   }, [entries]);
 
   const t = profile.targets;
+  const MEAL_LABEL: Record<MealKey, string> = {
+    breakfast: tr("nutrition.meal.breakfast"),
+    lunch: tr("nutrition.meal.lunch"),
+    snack: tr("nutrition.meal.snack"),
+    dinner: tr("nutrition.meal.dinner"),
+  };
   const water = log?.water ?? 0;
 
   const persist = async (next: Partial<DailyLog>) => {
@@ -179,9 +184,9 @@ function NutritionPage() {
   }));
 
   const macros = [
-    { name: "Carbs", value: totals.c * 4, color: "oklch(0.7 0.18 290)" },
-    { name: "Protein", value: totals.p * 4, color: "oklch(0.83 0.22 145)" },
-    { name: "Fats", value: totals.f * 9, color: "oklch(0.82 0.17 80)" },
+    { name: tr("nutrition.carbs"), value: totals.c * 4, color: "oklch(0.7 0.18 290)" },
+    { name: tr("nutrition.protein"), value: totals.p * 4, color: "oklch(0.83 0.22 145)" },
+    { name: tr("nutrition.fats"), value: totals.f * 9, color: "oklch(0.82 0.17 80)" },
   ];
   const totalMacroCal = macros.reduce((a, m) => a + m.value, 0);
 
@@ -197,41 +202,41 @@ function NutritionPage() {
     <div className="space-y-6">
       <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:flex sm:flex-wrap sm:justify-between">
         <div className="min-w-0">
-          <h1 className="truncate text-2xl font-black tracking-tight sm:text-3xl">Nutrition</h1>
-          <p className="text-sm text-muted-foreground">Log your meals and track macros for today.</p>
+          <h1 className="truncate text-2xl font-black tracking-tight sm:text-3xl">{tr("nutrition.title")}</h1>
+          <p className="text-sm text-muted-foreground">{tr("nutrition.subtitle")}</p>
         </div>
         {saving && (
           <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border/60 px-2.5 py-1 text-xs text-muted-foreground">
-            <Loader2 className="h-3 w-3 animate-spin" /> Saving
+            <Loader2 className="h-3 w-3 animate-spin" /> {tr("nutrition.saving")}
           </span>
         )}
       </header>
 
       {/* Macro summary */}
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <MacroCard icon={Flame} color="amber" label="Calories" value={totals.cal} goal={t.calories} unit="kcal" />
-        <MacroCard icon={Beef} color="primary" label="Protein" value={Math.round(totals.p)} goal={t.proteinG} unit="g" />
-        <MacroCard icon={Wheat} color="violet" label="Carbs" value={Math.round(totals.c)} goal={t.carbsG} unit="g" />
-        <MacroCard icon={Apple} color="sky" label="Fats" value={Math.round(totals.f)} goal={t.fatsG} unit="g" />
+        <MacroCard icon={Flame} color="amber" label={tr("nutrition.calories")} value={totals.cal} goal={t.calories} unit="kcal" />
+        <MacroCard icon={Beef} color="primary" label={tr("nutrition.protein")} value={Math.round(totals.p)} goal={t.proteinG} unit="g" />
+        <MacroCard icon={Wheat} color="violet" label={tr("nutrition.carbs")} value={Math.round(totals.c)} goal={t.carbsG} unit="g" />
+        <MacroCard icon={Apple} color="sky" label={tr("nutrition.fats")} value={Math.round(totals.f)} goal={t.fatsG} unit="g" />
       </section>
 
       <div className="grid gap-4 lg:grid-cols-3">
         {/* Meals */}
         <section className="rounded-2xl border border-border/60 bg-card/70 p-4 sm:p-5 lg:col-span-2">
           <div className="flex items-center justify-between">
-            <h2 className="font-bold">Today's Meals</h2>
+            <h2 className="font-bold">{tr("nutrition.meals")}</h2>
             <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-              {entries.length} item{entries.length !== 1 ? "s" : ""}
+              {entries.length} {tr("nutrition.items")}
             </span>
           </div>
 
           <Tabs defaultValue="breakfast" className="mt-4">
             <TabsList className="grid w-full grid-cols-4">
-              {(Object.keys(MEAL_LABEL) as MealKey[]).map((k) => (
+              {MEAL_KEYS.map((k) => (
                 <TabsTrigger key={k} value={k} className="text-xs sm:text-sm">{MEAL_LABEL[k]}</TabsTrigger>
               ))}
             </TabsList>
-            {(Object.keys(MEAL_LABEL) as MealKey[]).map((k) => (
+            {MEAL_KEYS.map((k) => (
               <TabsContent key={k} value={k} className="mt-4 space-y-4">
                 <MealList entries={entries.filter((e) => e.meal === k)} onRemove={removeEntry} />
                 <FoodPicker onAdd={(f, s) => addEntry(k, f, s)} />
@@ -245,7 +250,7 @@ function NutritionPage() {
           {/* Water */}
           <div className="rounded-2xl border border-border/60 bg-card/70 p-5">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold">Water</h3>
+              <h3 className="font-bold">{tr("nutrition.water")}</h3>
               <span className="text-xs text-muted-foreground">{water} / {t.waterL} L</span>
             </div>
             <div className="mt-3 grid grid-cols-8 gap-1.5">
@@ -279,7 +284,7 @@ function NutritionPage() {
 
           {/* Macro split */}
           <div className="rounded-2xl border border-border/60 bg-card/70 p-5">
-            <h3 className="font-bold">Macro Split</h3>
+            <h3 className="font-bold">{tr("nutrition.macroSplit")}</h3>
             <div className="mt-2 flex items-center gap-3">
               <div className="h-28 w-28 shrink-0">
                 <ResponsiveContainer width="100%" height="100%">
@@ -311,8 +316,8 @@ function NutritionPage() {
       {/* Weekly */}
       <section className="rounded-2xl border border-border/60 bg-card/70 p-4 sm:p-5">
         <div className="flex items-center justify-between">
-          <h3 className="font-bold">Last 7 Days</h3>
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Calories vs Protein</span>
+          <h3 className="font-bold">{tr("nutrition.last7")}</h3>
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{tr("nutrition.caloriesVsProtein")}</span>
         </div>
         <div className="mt-3 h-56">
           <ResponsiveContainer width="100%" height="100%">
