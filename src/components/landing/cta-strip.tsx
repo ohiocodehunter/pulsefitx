@@ -2,6 +2,11 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useT } from "@/lib/i18n";
+import avatar1 from "@/assets/avatars/avatar-1.jpg";
+import avatar2 from "@/assets/avatars/avatar-2.jpg";
+import avatar3 from "@/assets/avatars/avatar-3.jpg";
+
+const ctaAvatars = [avatar1, avatar2, avatar3];
 
 export function CtaStrip() {
   const { t } = useT();
@@ -15,8 +20,16 @@ export function CtaStrip() {
           </div>
           <div className="flex items-center gap-4">
             <div className="hidden -space-x-2 sm:flex">
-              {[0, 1, 2].map((i) => (
-                <div key={i} className="h-9 w-9 rounded-full border-2 border-violet-300/60 bg-gradient-to-br from-primary/60 to-violet-500/60" />
+              {ctaAvatars.map((src, i) => (
+                <img
+                  key={i}
+                  src={src}
+                  alt=""
+                  loading="lazy"
+                  width={36}
+                  height={36}
+                  className="h-9 w-9 rounded-full border-2 border-violet-300/60 object-cover"
+                />
               ))}
             </div>
             <div>
