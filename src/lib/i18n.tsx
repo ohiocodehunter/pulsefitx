@@ -628,6 +628,14 @@ const ja: Dict = {
   "meals.addOne": "少なくとも1つの食材を追加してください",
   "meals.yourPlan": "あなたのAIプラン",
   "meals.coachTips": "コーチのヒント",
+  "meals.saved": "保存済みプラン",
+  "meals.view": "表示",
+  "meals.modify": "編集",
+  "meals.savedToast": "プランを履歴に保存しました",
+  "meals.deleted": "プランを削除しました",
+  "meals.modifyHint": "食材を編集して再生成してください",
+  "common.confirm": "確認",
+  "common.cancel": "キャンセル",
 
   // Profile
   "profile.title": "プロフィール",
