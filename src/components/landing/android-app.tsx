@@ -24,7 +24,7 @@ export function AndroidApp() {
             </ul>
             <div className="mt-6 flex flex-wrap gap-3">
               <a
-                href="https://github.com/ohiocodehunter/pulsefitx-android/releases/latest"
+                href="https://github.com/ohiocodehunter/PulseFitX/releases"
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition hover:brightness-110"
