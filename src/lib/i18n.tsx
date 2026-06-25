@@ -271,6 +271,14 @@ const en: Dict = {
   "meals.addOne": "Add at least one food",
   "meals.yourPlan": "Your AI Plan",
   "meals.coachTips": "Coach tips",
+  "meals.saved": "Saved plans",
+  "meals.view": "View",
+  "meals.modify": "Modify",
+  "meals.savedToast": "Plan saved to history",
+  "meals.deleted": "Plan deleted",
+  "meals.modifyHint": "Edit foods and regenerate to update",
+  "common.confirm": "Confirm",
+  "common.cancel": "Cancel",
 
   // Profile
   "profile.title": "Your Profile",
