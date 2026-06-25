@@ -1,31 +1,70 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-const GEMINI_MODEL = "gemini-3.5-flash";
+// Free-tier Gemini models, tried in order. When one is busy/rate-limited, fall back to the next.
+const FREE_MODELS = [
+  "gemini-3.5-flash",
+  "gemini-3.1-flash-lite",
+  "gemini-3-flash",
+];
+
 const GEMINI_URL = (model: string, key: string) =>
   `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+
+function isRetriable(status: number, message: string): boolean {
+  return (
+    status === 503 ||
+    status === 429 ||
+    /unavailable|high demand|rate limit|too many requests|resource exhausted/i.test(message)
+  );
+}
 
 async function callGemini(prompt: string, system?: string): Promise<string> {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error("GEMINI_API_KEY is not configured");
-  const body = {
-    contents: [{ role: "user", parts: [{ text: prompt }] }],
-    ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),
-    generationConfig: { temperature: 0.7, maxOutputTokens: 2048 },
-  };
-  const res = await fetch(GEMINI_URL(GEMINI_MODEL, key), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Gemini error ${res.status}: ${errText.slice(0, 200)}`);
+
+  let lastError: Error | undefined;
+
+  for (let i = 0; i < FREE_MODELS.length; i++) {
+    const model = FREE_MODELS[i];
+    const body = {
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),
+      generationConfig: { temperature: 0.7, maxOutputTokens: 2048 },
+    };
+    try {
+      const res = await fetch(GEMINI_URL(model, key), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        const err = new Error(`Gemini error ${res.status}: ${errText.slice(0, 200)}`);
+        if (isRetriable(res.status, errText)) {
+          lastError = err;
+          // Brief pause before trying the next free model
+          if (i < FREE_MODELS.length - 1) await new Promise((r) => setTimeout(r, 600));
+          continue;
+        }
+        throw err;
+      }
+      const json = (await res.json()) as {
+        candidates?: { content?: { parts?: { text?: string }[] } }[];
+      };
+      return json.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+    } catch (e) {
+      const err = e instanceof Error ? e : new Error(String(e));
+      if (isRetriable(0, err.message)) {
+        lastError = err;
+        if (i < FREE_MODELS.length - 1) await new Promise((r) => setTimeout(r, 600));
+        continue;
+      }
+      throw err;
+    }
   }
-  const json = (await res.json()) as {
-    candidates?: { content?: { parts?: { text?: string }[] } }[];
-  };
-  return json.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+
+  throw lastError ?? new Error("All Gemini models are busy. Please try again later.");
 }
 
 /** Chat with the AI fitness coach. */
