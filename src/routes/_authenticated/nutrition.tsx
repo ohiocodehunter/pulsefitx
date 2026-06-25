@@ -16,6 +16,7 @@ import {
 } from "@/lib/firestore-data";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/nutrition")({
   ssr: false,
@@ -46,6 +47,28 @@ const FOODS: Food[] = [
   { name: "Broccoli", unit: "100 g", cal: 35, p: 2.4, c: 7, f: 0.4 },
   { name: "Sweet potato", unit: "100 g", cal: 86, p: 1.6, c: 20, f: 0.1 },
   { name: "Olive oil", unit: "1 tbsp", cal: 119, p: 0, c: 0, f: 13.5 },
+  // ----- Japanese / washoku staples -----
+  { name: "白ごはん / White rice (cooked)", unit: "1 bowl (150 g)", cal: 252, p: 3.8, c: 55, f: 0.5 },
+  { name: "玄米 / Brown rice (cooked)", unit: "1 bowl (150 g)", cal: 165, p: 3.5, c: 35, f: 1.3 },
+  { name: "味噌汁 / Miso soup", unit: "1 bowl (200 ml)", cal: 40, p: 3, c: 5, f: 1 },
+  { name: "納豆 / Natto", unit: "1 pack (50 g)", cal: 100, p: 8.3, c: 6, f: 5 },
+  { name: "焼き鮭 / Grilled salmon", unit: "1 fillet (80 g)", cal: 160, p: 18, c: 0, f: 9 },
+  { name: "鶏の唐揚げ / Karaage", unit: "3 pieces (100 g)", cal: 290, p: 16, c: 12, f: 20 },
+  { name: "親子丼 / Oyakodon", unit: "1 bowl (400 g)", cal: 620, p: 32, c: 80, f: 18 },
+  { name: "牛丼 / Gyudon", unit: "1 bowl (400 g)", cal: 700, p: 22, c: 95, f: 22 },
+  { name: "寿司 (にぎり) / Nigiri sushi", unit: "1 piece", cal: 50, p: 3.5, c: 7, f: 0.5 },
+  { name: "まぐろ刺身 / Tuna sashimi", unit: "5 slices (60 g)", cal: 78, p: 17, c: 0, f: 0.8 },
+  { name: "ラーメン (醤油) / Shoyu ramen", unit: "1 bowl (500 g)", cal: 480, p: 22, c: 65, f: 14 },
+  { name: "うどん (かけ) / Kake udon", unit: "1 bowl (450 g)", cal: 350, p: 11, c: 70, f: 2 },
+  { name: "そば (ざる) / Zaru soba", unit: "1 serving (250 g)", cal: 300, p: 12, c: 60, f: 1.5 },
+  { name: "餃子 / Gyoza", unit: "5 pieces", cal: 230, p: 8, c: 22, f: 12 },
+  { name: "おにぎり (鮭) / Onigiri (salmon)", unit: "1 piece (110 g)", cal: 200, p: 5, c: 38, f: 2.5 },
+  { name: "豆腐 / Tofu (silken)", unit: "100 g", cal: 56, p: 5, c: 1.9, f: 3.2 },
+  { name: "枝豆 / Edamame", unit: "100 g", cal: 122, p: 11, c: 10, f: 5 },
+  { name: "卵焼き / Tamagoyaki", unit: "2 slices (60 g)", cal: 110, p: 7, c: 2, f: 8 },
+  { name: "とんかつ / Tonkatsu", unit: "1 piece (150 g)", cal: 450, p: 23, c: 18, f: 30 },
+  { name: "緑茶 / Green tea", unit: "1 cup (200 ml)", cal: 2, p: 0, c: 0, f: 0 },
+  { name: "抹茶ラテ / Matcha latte", unit: "1 cup (240 ml)", cal: 120, p: 5, c: 17, f: 4 },
 ];
 
 type MealKey = "breakfast" | "lunch" | "snack" | "dinner";
