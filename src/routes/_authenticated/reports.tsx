@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, BarChart, Bar } from "recharts";
 import { useAuth } from "@/lib/auth-context";
 import { getRecentLogs, type DailyLog } from "@/lib/firestore-data";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/reports")({
   head: () => ({ meta: [{ title: "Reports - PulsefitX" }] }),
@@ -11,13 +12,14 @@ export const Route = createFileRoute("/_authenticated/reports")({
 
 function Reports() {
   const { user } = useAuth();
+  const { t: tr } = useT();
   const [logs, setLogs] = useState<DailyLog[]>([]);
   useEffect(() => { if (user) getRecentLogs(user.uid, 30).then(setLogs); }, [user]);
   const data = logs.map((l) => ({ day: l.date.slice(5), calories: l.calories, steps: l.steps, water: l.water }));
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-black sm:text-3xl">Reports</h1>
-      <Chart title="Calories — last 30 days">
+      <h1 className="text-2xl font-black sm:text-3xl">{tr("reports.title")}</h1>
+      <Chart title={tr("reports.calories30")}>
         <LineChart data={data}>
           <XAxis dataKey="day" stroke="oklch(0.66 0.02 250)" fontSize={10} />
           <YAxis stroke="oklch(0.66 0.02 250)" fontSize={10} />
@@ -25,7 +27,7 @@ function Reports() {
           <Line type="monotone" dataKey="calories" stroke="oklch(0.83 0.22 145)" strokeWidth={2} dot={false} />
         </LineChart>
       </Chart>
-      <Chart title="Steps — last 30 days">
+      <Chart title={tr("reports.steps30")}>
         <BarChart data={data}>
           <XAxis dataKey="day" stroke="oklch(0.66 0.02 250)" fontSize={10} />
           <YAxis stroke="oklch(0.66 0.02 250)" fontSize={10} />

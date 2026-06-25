@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/auth-context";
 import { getLog, todayKey, type DailyLog } from "@/lib/firestore-data";
 import { chatWithCoach } from "@/lib/ai.functions";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/coach")({
   head: () => ({ meta: [{ title: "AI Coach - PulsefitX" }] }),
@@ -17,16 +18,16 @@ export const Route = createFileRoute("/_authenticated/coach")({
 
 type Msg = { role: "user" | "assistant"; text: string };
 
-const starters = [
-  "What should I eat for dinner tonight?",
-  "Is my calorie goal too aggressive?",
-  "How do I increase my protein on a budget?",
-  "Suggest a 20-minute workout I can do at home.",
-];
-
 function Coach() {
   const { profile } = useProfile();
   const { user } = useAuth();
+  const { t: tr, lang } = useT();
+  const starters = [
+    tr("coach.starter1"),
+    tr("coach.starter2"),
+    tr("coach.starter3"),
+    tr("coach.starter4"),
+  ];
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -55,6 +56,7 @@ function Coach() {
           todayCalories: today?.calories ?? 0, todaySteps: today?.steps ?? 0, todayProtein: today?.protein ?? 0,
         },
         history: next.slice(-10),
+        lang,
       }});
       setMessages((m) => [...m, { role: "assistant", text: r.reply }]);
     } catch (e) {
@@ -64,9 +66,7 @@ function Coach() {
         ...m,
         {
           role: "assistant",
-          text: isHighDemand
-            ? "AI is having high demand right now. Please wait a moment and try again."
-            : "Something went wrong. Please try again.",
+          text: isHighDemand ? tr("coach.highDemand") : tr("coach.error"),
         },
       ]);
     } finally { setBusy(false); }
@@ -79,8 +79,8 @@ function Coach() {
           <Bot className="h-6 w-6" />
         </div>
         <div>
-          <h1 className="text-2xl font-black">AI Coach</h1>
-          <p className="text-xs text-muted-foreground">Personalized advice based on your day.</p>
+          <h1 className="text-2xl font-black">{tr("coach.title")}</h1>
+          <p className="text-xs text-muted-foreground">{tr("coach.subtitle")}</p>
         </div>
       </header>
 
@@ -89,8 +89,8 @@ function Coach() {
           <div className="grid h-full place-items-center">
             <div className="max-w-md text-center">
               <Sparkles className="mx-auto h-8 w-8 text-primary" />
-              <h2 className="mt-3 text-lg font-bold">How can I help you today, {profile.name.split(" ")[0]}?</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Ask anything about nutrition, workouts, recovery, or habits.</p>
+              <h2 className="mt-3 text-lg font-bold">{tr("coach.greet")} {profile.name.split(" ")[0]}?</h2>
+              <p className="mt-1 text-sm text-muted-foreground">{tr("coach.askAnything")}</p>
               <div className="mt-5 grid gap-2 text-left">
                 {starters.map((s) => (
                   <button key={s} onClick={() => send(s)}
@@ -131,7 +131,7 @@ function Coach() {
       <form className="mt-4 flex items-center gap-2"
         onSubmit={(e) => { e.preventDefault(); send(input); }}>
         <Input value={input} onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask your coach anything..." className="h-12 rounded-full" maxLength={500} disabled={busy} />
+          placeholder={tr("coach.placeholder")} className="h-12 rounded-full" maxLength={500} disabled={busy} />
         <Button variant="hero" size="icon" type="submit" disabled={busy || !input.trim()} className="h-12 w-12 rounded-full">
           <Send className="h-4 w-4" />
         </Button>

@@ -21,7 +21,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 function Dashboard() {
   const { user } = useAuth();
   const { profile } = useProfile();
-  const { t: tr } = useT();
+  const { t: tr, lang } = useT();
   const navigate = useNavigate();
   const date = todayKey();
   const [log, setLog] = useState<DailyLog | null>(null);
@@ -52,6 +52,7 @@ function Dashboard() {
       const r = await generateCoachInsight({ data: {
         calorieGoal: t.calories, proteinGoal: t.proteinG, stepGoal: t.stepGoal, waterGoal: t.waterL,
         todayCalories: c, todayProtein: p, todaySteps: s, todayWater: w, goal: profile.goal,
+        lang,
       }});
       setInsight(r.insight);
     } catch (e) { toast.error((e as Error).message); }
@@ -62,11 +63,11 @@ function Dashboard() {
     const carbs = log?.carbs ?? 0; const fats = log?.fats ?? 0;
     const totalCal = carbs * 4 + p * 4 + fats * 9;
     return [
-      { name: "Carbs", value: carbs * 4, color: "oklch(0.7 0.18 290)" },
-      { name: "Protein", value: p * 4, color: "oklch(0.83 0.22 145)" },
-      { name: "Fats", value: fats * 9, color: "oklch(0.82 0.17 80)" },
+      { name: tr("stat.carbs"), value: carbs * 4, color: "oklch(0.7 0.18 290)" },
+      { name: tr("stat.protein"), value: p * 4, color: "oklch(0.83 0.22 145)" },
+      { name: tr("stat.fats"), value: fats * 9, color: "oklch(0.82 0.17 80)" },
     ].map(m => ({ ...m, pct: totalCal > 0 ? Math.round((m.value / totalCal) * 100) : 0 }));
-  }, [log, p]);
+  }, [log, p, tr]);
 
   const weeklyData = week.map((d) => ({
     day: d.date.slice(5),
@@ -81,33 +82,33 @@ function Dashboard() {
           <h1 className="truncate text-xl font-black tracking-tight sm:text-3xl">
             {greet}, {profile.name.split(" ")[0] || "there"}!
           </h1>
-          <p className="text-xs text-muted-foreground sm:text-sm">Let's make today healthier than yesterday.</p>
+          <p className="text-xs text-muted-foreground sm:text-sm">{tr("dash.subtitle")}</p>
         </div>
         <Button variant="hero" size="sm" onClick={() => navigate({ to: "/coach" })} className="shrink-0">
-          <Bot className="h-4 w-4" /> AI Coach
+          <Bot className="h-4 w-4" /> {tr("dash.aiCoach")}
         </Button>
       </header>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatRing label="Calories" value={c} goal={t.calories} unit="kcal" icon={Flame} color="amber" />
-        <StatRing label="Steps" value={s} goal={t.stepGoal} unit="steps" icon={Footprints} color="primary" />
-        <StatRing label="Water" value={w} goal={t.waterL} unit="L" icon={Droplet} color="sky" />
-        <StatRing label="Protein" value={p} goal={t.proteinG} unit="g" icon={Beef} color="violet" />
+        <StatRing label={tr("stat.calories")} value={c} goal={t.calories} unit="kcal" icon={Flame} color="amber" />
+        <StatRing label={tr("stat.steps")} value={s} goal={t.stepGoal} unit="" icon={Footprints} color="primary" />
+        <StatRing label={tr("stat.water")} value={w} goal={t.waterL} unit="L" icon={Droplet} color="sky" />
+        <StatRing label={tr("stat.protein")} value={p} goal={t.proteinG} unit="g" icon={Beef} color="violet" />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
         {/* Today's plan */}
         <motion.section initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl border border-border/60 bg-card/70 p-5 backdrop-blur lg:col-span-2">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold">Today's Plan</h3>
-            <span className="rounded-full bg-violet-500/15 px-2 py-0.5 text-[10px] font-semibold text-violet-300">AI Generated</span>
+            <h3 className="font-bold">{tr("dash.todaysPlan")}</h3>
+            <span className="rounded-full bg-violet-500/15 px-2 py-0.5 text-[10px] font-semibold text-violet-300">{tr("dash.aiGenerated")}</span>
           </div>
-          <p className="mt-1 text-xs text-muted-foreground">Based on your goal: <span className="text-primary font-semibold">{labelGoal(profile.goal)}</span></p>
+          <p className="mt-1 text-xs text-muted-foreground">{tr("dash.basedOnGoal")} <span className="text-primary font-semibold">{tr("goal." + profile.goal)}</span></p>
           <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <PlanItem label="Calories Goal" value={`${t.calories}`} unit="kcal" />
-            <PlanItem label="Protein Goal" value={`${t.proteinG}`} unit="g" />
-            <PlanItem label="Step Goal" value={`${t.stepGoal.toLocaleString()}`} unit="steps" />
-            <PlanItem label="Water Goal" value={`${t.waterL}`} unit="L" />
+            <PlanItem label={tr("dash.calorieGoal")} value={`${t.calories}`} unit="kcal" />
+            <PlanItem label={tr("dash.proteinGoal")} value={`${t.proteinG}`} unit="g" />
+            <PlanItem label={tr("dash.stepGoal")} value={`${t.stepGoal.toLocaleString()}`} unit="" />
+            <PlanItem label={tr("dash.waterGoal")} value={`${t.waterL}`} unit="L" />
           </div>
         </motion.section>
 
@@ -115,14 +116,14 @@ function Dashboard() {
         <motion.section initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
           className="rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 to-violet-500/10 p-5">
           <div className="flex items-center gap-2 text-sm font-bold text-primary">
-            <Sparkles className="h-4 w-4" /> AI Coach Suggestion
+            <Sparkles className="h-4 w-4" /> {tr("dash.coachSuggestion")}
           </div>
           <p className="mt-3 min-h-[60px] text-sm leading-relaxed">
-            {insight || "Tap the button for a personalized recommendation based on your day so far."}
+            {insight || tr("dash.tapForTip")}
           </p>
           <Button onClick={requestInsight} variant="hero" size="sm" className="mt-3" disabled={insightLoading}>
             {insightLoading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-            {insight ? "Get another tip" : "Get recommendation"}
+            {insight ? tr("dash.getAnother") : tr("dash.getRecommendation")}
           </Button>
         </motion.section>
       </div>
@@ -130,18 +131,19 @@ function Dashboard() {
       <div className="grid gap-4 lg:grid-cols-3">
         {/* Quick log */}
         <QuickLog
+          tr={tr}
           onLog={async (patch) => {
             if (!user) return;
             const merged = { ...(log ?? { date, calories: 0, protein: 0, carbs: 0, fats: 0, water: 0, steps: 0, sleepHours: 0, meals: [] }), ...patch };
             await upsertLog(user.uid, date, merged);
             setLog(merged);
-            toast.success("Logged!");
+            toast.success(tr("dash.logged"));
           }}
         />
 
         {/* Calories breakdown */}
         <div className="rounded-2xl border border-border/60 bg-card/70 p-5">
-          <h3 className="font-bold">Calories Breakdown</h3>
+          <h3 className="font-bold">{tr("dash.caloriesBreakdown")}</h3>
           <div className="mt-3 flex items-center gap-4">
             <div className="h-32 w-32">
               <ResponsiveContainer width="100%" height="100%">
@@ -166,8 +168,8 @@ function Dashboard() {
         {/* Weekly chart */}
         <div className="rounded-2xl border border-border/60 bg-card/70 p-5 lg:col-span-1">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold">Weekly Progress</h3>
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">7 days</span>
+            <h3 className="font-bold">{tr("dash.weeklyProgress")}</h3>
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{tr("dash.sevenDays")}</span>
           </div>
           <div className="mt-3 h-40">
             <ResponsiveContainer width="100%" height="100%">
@@ -195,22 +197,18 @@ function PlanItem({ label, value, unit }: { label: string; value: string; unit: 
   );
 }
 
-function labelGoal(g: string) {
-  return ({ lose: "Weight Loss", maintain: "Maintenance", gain: "Weight Gain", muscle: "Muscle Gain" } as Record<string, string>)[g] ?? g;
-}
-
-function QuickLog({ onLog }: { onLog: (p: Partial<DailyLog>) => Promise<void> }) {
+function QuickLog({ onLog, tr }: { onLog: (p: Partial<DailyLog>) => Promise<void>; tr: (k: string) => string }) {
   const [cal, setCal] = useState(""); const [prot, setProt] = useState("");
   const [steps, setSteps] = useState(""); const [water, setWater] = useState("");
   return (
     <div className="rounded-2xl border border-border/60 bg-card/70 p-5">
-      <h3 className="font-bold">Quick Log</h3>
-      <p className="mt-0.5 text-xs text-muted-foreground">Add to today's totals</p>
+      <h3 className="font-bold">{tr("dash.quickLog")}</h3>
+      <p className="mt-0.5 text-xs text-muted-foreground">{tr("dash.addToToday")}</p>
       <div className="mt-4 grid grid-cols-2 gap-2">
-        <LogField label="Calories" value={cal} onChange={setCal} unit="kcal" />
-        <LogField label="Protein" value={prot} onChange={setProt} unit="g" />
-        <LogField label="Steps" value={steps} onChange={setSteps} unit="steps" />
-        <LogField label="Water" value={water} onChange={setWater} unit="L" step="0.25" />
+        <LogField label={tr("stat.calories")} value={cal} onChange={setCal} unit="kcal" />
+        <LogField label={tr("stat.protein")} value={prot} onChange={setProt} unit="g" />
+        <LogField label={tr("stat.steps")} value={steps} onChange={setSteps} unit="" />
+        <LogField label={tr("stat.water")} value={water} onChange={setWater} unit="L" step="0.25" />
       </div>
       <Button
         variant="hero" size="sm" className="mt-4 w-full"
@@ -220,11 +218,11 @@ function QuickLog({ onLog }: { onLog: (p: Partial<DailyLog>) => Promise<void> })
           if (prot) patch.protein = Number(prot);
           if (steps) patch.steps = Number(steps);
           if (water) patch.water = Number(water);
-          if (Object.keys(patch).length === 0) return toast.error("Enter at least one value");
+          if (Object.keys(patch).length === 0) return toast.error(tr("dash.enterValue"));
           await onLog(patch);
           setCal(""); setProt(""); setSteps(""); setWater("");
         }}>
-        <Plus className="h-4 w-4" /> Log
+        <Plus className="h-4 w-4" /> {tr("dash.log")}
       </Button>
     </div>
   );
