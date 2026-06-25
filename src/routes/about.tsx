@@ -4,7 +4,7 @@ import { SiteFooter } from "@/components/landing/site-footer";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n";
 import { ArrowRight, Linkedin, ShieldCheck, Heart, Globe2, Github } from "lucide-react";
-import founderImg from "@/assets/team/founder.jpg";
+import founderImg from "@/assets/team/profile-photo.jpg";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
