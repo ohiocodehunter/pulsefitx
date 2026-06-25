@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Utensils, Sparkles, X, Loader2, Lightbulb, Trash2, History } from "lucide-react";
+import { Utensils, Sparkles, X, Loader2, Lightbulb, Trash2, History, Pencil, Clock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,10 +31,23 @@ function Meals() {
   const [busy, setBusy] = useState(false);
   const [plan, setPlan] = useState<Plan | null>(null);
   const [saved, setSaved] = useState<SavedMealPlan[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
-    listMealPlans(user.uid).then(setSaved).catch(() => {});
+    listMealPlans(user.uid)
+      .then((list) => {
+        setSaved(list);
+        // Auto-restore the most recent plan so it survives page refresh.
+        if (list.length > 0 && !plan) {
+          setPlan(list[0].plan as Plan);
+          setActiveId(list[0].id);
+          setFoods(list[0].foods);
+        }
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const addFood = (f: string) => {
@@ -65,6 +78,8 @@ function Meals() {
         try {
           await saveMealPlan(user.uid, entry);
           setSaved((s) => [entry, ...s]);
+          setActiveId(entry.id);
+          toast.success(tr("meals.savedToast") || "Plan saved to history");
         } catch {
           /* ignore — plan still visible in memory */
         }
@@ -77,7 +92,23 @@ function Meals() {
     if (!user) return;
     await deleteMealPlan(user.uid, id);
     setSaved((s) => s.filter((p) => p.id !== id));
-    toast.success(tr("meals.deleted") || "Deleted");
+    if (activeId === id) { setPlan(null); setActiveId(null); }
+    setConfirmDelete(null);
+    toast.success(tr("meals.deleted") || "Plan deleted");
+  };
+
+  const modifySaved = (s: SavedMealPlan) => {
+    setFoods(s.foods);
+    setPlan(s.plan as Plan);
+    setActiveId(s.id);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    toast.success(tr("meals.modifyHint") || "Edit foods and regenerate to update");
+  };
+
+  const openSaved = (s: SavedMealPlan) => {
+    setPlan(s.plan as Plan);
+    setActiveId(s.id);
+    setFoods(s.foods);
   };
 
   return (
@@ -176,22 +207,43 @@ function Meals() {
             {saved.map((s) => {
               const p = s.plan as Plan;
               const date = new Date(s.createdAt);
-              const isOpen = plan === p;
+              const isOpen = activeId === s.id;
               return (
-                <li key={s.id} className="rounded-2xl border border-border/60 bg-card/70 p-4">
-                  <div className="flex items-center justify-between gap-2">
-                    <button onClick={() => setPlan(p)} className="min-w-0 flex-1 text-left">
-                      <div className="truncate text-sm font-semibold">{p?.summary?.slice(0, 80) || "Meal plan"}</div>
-                      <div className="text-[11px] text-muted-foreground">
-                        {date.toLocaleString()} · {s.foods.slice(0, 4).join(", ")}{s.foods.length > 4 ? "…" : ""}
+                <li key={s.id} className={`rounded-2xl border bg-card/70 p-4 ${isOpen ? "border-primary/50" : "border-border/60"}`}>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <button onClick={() => openSaved(s)} className="min-w-0 flex-1 text-left">
+                      <div className="flex items-center gap-2">
+                        <div className="truncate text-sm font-semibold">{p?.summary?.slice(0, 80) || "Meal plan"}</div>
+                        {isOpen && <span className="shrink-0 rounded-full bg-primary/15 px-2 py-0.5 text-[9px] font-bold uppercase text-primary">Active</span>}
+                      </div>
+                      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+                        <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" />{date.toLocaleString(lang === "ja" ? "ja-JP" : undefined)}</span>
+                        <span className="truncate">{s.foods.slice(0, 5).join(", ")}{s.foods.length > 5 ? "…" : ""}</span>
                       </div>
                     </button>
-                    <Button variant="ghost" size="sm" onClick={() => setPlan(p)} disabled={isOpen}>
-                      {tr("meals.view") || "View"}
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => removeSaved(s.id)} title="Delete">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center gap-1 sm:gap-2">
+                      <Button variant="ghost" size="sm" onClick={() => openSaved(s)} disabled={isOpen}>
+                        {tr("meals.view") || "View"}
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => modifySaved(s)} title={tr("meals.modify") || "Modify"}>
+                        <Pencil className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">{tr("meals.modify") || "Modify"}</span>
+                      </Button>
+                      {confirmDelete === s.id ? (
+                        <>
+                          <Button variant="destructive" size="sm" onClick={() => removeSaved(s.id)}>
+                            {tr("common.confirm") || "Confirm"}
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(null)}>
+                            {tr("common.cancel") || "Cancel"}
+                          </Button>
+                        </>
+                      ) : (
+                        <Button variant="ghost" size="icon" onClick={() => setConfirmDelete(s.id)} title="Delete">
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </li>
               );
