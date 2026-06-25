@@ -11,7 +11,7 @@ export function LanguageSwitcher() {
           key={l}
           onClick={() => setLang(l)}
           aria-pressed={lang === l}
-          className={`rounded-full px-2.5 py-1 font-semibold transition-colors ${
+          className={`inline-flex h-7 min-w-[44px] items-center justify-center rounded-full px-2.5 font-semibold leading-none transition-colors ${
             lang === l ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
           }`}
         >
