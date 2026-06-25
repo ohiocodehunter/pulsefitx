@@ -689,6 +689,17 @@ const ja: Dict = {
   "streaks.title": "ストリーク",
   "streaks.days": "連続記録日数",
   "streaks.keep": "食事・水分・歩数を毎日記録してストリークを伸ばしましょう。",
+
+  "android.badge": "Androidアプリ提供中",
+  "android.title": "PulsefitXをポケットに。",
+  "android.subtitle": "ネイティブAndroidアプリで、AIコーチ・食事プラン・アクティビティ計測をいつでも。オフライン記録と即時通知に対応。",
+  "android.b1": "ワンタップで食事と水分を記録",
+  "android.b2": "既存のアカウントでGoogleサインイン",
+  "android.b3": "Webダッシュボードとリアルタイム同期",
+  "android.download": "APKをダウンロード",
+  "android.requirements": "Android 8.0以上 ・ 12MB",
+  "android.note": "iOSアプリは近日公開予定です。それまでは、Safariからホーム画面に追加してアプリのようにご利用いただけます。",
+  "android.steps": "今日の歩数",
 };
 
 const dicts: Record<Lang, Dict> = { en, ja };
