@@ -14,9 +14,9 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/70 backdrop-blur-xl">
-      <div className="container mx-auto flex h-16 items-center justify-between gap-2 px-4 sm:px-6">
-        <Link to="/" className="flex shrink-0 items-center"><Logo /></Link>
+    <header className="sticky top-0 z-40 w-full overflow-x-clip border-b border-border/40 bg-background/70 backdrop-blur-xl">
+      <div className="container mx-auto flex h-16 max-w-full items-center justify-between gap-2 px-3 sm:px-6">
+        <Link to="/" className="flex min-w-0 shrink items-center"><Logo /></Link>
         <nav className="hidden items-center gap-6 text-sm font-medium lg:flex">
           <Link to="/" hash="home" className="text-foreground/90 underline-offset-8 hover:underline">{t("nav.home")}</Link>
           <Link to="/" hash="features" className="text-foreground/70 hover:text-foreground">{t("nav.features")}</Link>
@@ -24,7 +24,7 @@ export function SiteHeader() {
           <Link to="/" hash="plans" className="text-foreground/70 hover:text-foreground">{t("nav.plans")}</Link>
           <Link to="/about" className="text-foreground/70 hover:text-foreground">{t("nav.about")}</Link>
         </nav>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <LanguageSwitcher />
           {isAuthed ? (
             <Link to="/dashboard">
