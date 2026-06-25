@@ -340,6 +340,17 @@ const en: Dict = {
   "streaks.title": "Your Streak",
   "streaks.days": "consecutive days logged",
   "streaks.keep": "Keep logging your meals, water, or steps every day to grow your streak.",
+
+  "android.badge": "Android App Available",
+  "android.title": "Take PulsefitX with you, everywhere.",
+  "android.subtitle": "The native Android app brings your AI coach, meal planner and activity tracking to your pocket — with offline logging and instant notifications.",
+  "android.b1": "Instant meal & water logging in one tap",
+  "android.b2": "Secure Google Sign-In with your existing account",
+  "android.b3": "Syncs in real time with the web dashboard",
+  "android.download": "Download APK",
+  "android.requirements": "Android 8.0+ • 12 MB",
+  "android.note": "iOS app is coming soon. Until then, add PulsefitX to your home screen from Safari for an app-like experience.",
+  "android.steps": "steps today",
 };
 
 const ja: Dict = {
@@ -678,6 +689,17 @@ const ja: Dict = {
   "streaks.title": "ストリーク",
   "streaks.days": "連続記録日数",
   "streaks.keep": "食事・水分・歩数を毎日記録してストリークを伸ばしましょう。",
+
+  "android.badge": "Androidアプリ提供中",
+  "android.title": "PulsefitXをポケットに。",
+  "android.subtitle": "ネイティブAndroidアプリで、AIコーチ・食事プラン・アクティビティ計測をいつでも。オフライン記録と即時通知に対応。",
+  "android.b1": "ワンタップで食事と水分を記録",
+  "android.b2": "既存のアカウントでGoogleサインイン",
+  "android.b3": "Webダッシュボードとリアルタイム同期",
+  "android.download": "APKをダウンロード",
+  "android.requirements": "Android 8.0以上 ・ 12MB",
+  "android.note": "iOSアプリは近日公開予定です。それまでは、Safariからホーム画面に追加してアプリのようにご利用いただけます。",
+  "android.steps": "今日の歩数",
 };
 
 const dicts: Record<Lang, Dict> = { en, ja };

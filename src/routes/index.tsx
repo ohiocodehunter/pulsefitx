@@ -9,6 +9,7 @@ import { HowItWorks } from "@/components/landing/how-it-works";
 import { StatsBand } from "@/components/landing/stats-band";
 import { Testimonials } from "@/components/landing/testimonials";
 import { Faq } from "@/components/landing/faq";
+import { AndroidApp } from "@/components/landing/android-app";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -34,6 +35,7 @@ function Index() {
         <FeatureCards />
         <HowItWorks />
         <Testimonials />
+        <AndroidApp />
         <Faq />
         <CtaStrip />
       </main>

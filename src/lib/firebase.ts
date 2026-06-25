@@ -1,7 +1,13 @@
 // Firebase web config is publishable by design — security is enforced via
 // Firestore rules + Auth domain allowlist in the Firebase console.
 import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
-import { getAuth, type Auth, GoogleAuthProvider } from "firebase/auth";
+import {
+  getAuth,
+  type Auth,
+  GoogleAuthProvider,
+  browserLocalPersistence,
+  setPersistence,
+} from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -24,6 +30,10 @@ function ensure() {
     _app = getApps()[0] ?? initializeApp(firebaseConfig);
     _auth = getAuth(_app);
     _db = getFirestore(_app);
+    // Persist auth across tab closes / browser restarts.
+    setPersistence(_auth, browserLocalPersistence).catch(() => {
+      /* non-fatal; falls back to in-memory */
+    });
   }
   return _app;
 }
@@ -41,3 +51,7 @@ export function getDb(): Firestore {
 }
 
 export const googleProvider = new GoogleAuthProvider();
+// Always show the Google account chooser so users with multiple Google
+// accounts can pick which one to sign in with (instead of silently re-using
+// the previously selected account).
+googleProvider.setCustomParameters({ prompt: "select_account" });
