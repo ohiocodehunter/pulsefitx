@@ -1,0 +1,9 @@
+# Netlify deployment for TanStack Start (SSR via Nitro)
+# Nitro auto-detects Netlify and emits a server function + static assets.
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NITRO_PRESET = "netlify"
+  NODE_VERSION = "20"
