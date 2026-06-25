@@ -3,9 +3,12 @@ import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { useAuth } from "@/lib/auth-context";
 
 export function SiteHeader() {
   const { t } = useT();
+  const { user, loading } = useAuth();
+  const isAuthed = !loading && !!user;
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/70 backdrop-blur-xl">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6">
@@ -19,12 +22,20 @@ export function SiteHeader() {
         </nav>
         <div className="flex items-center gap-2">
           <LanguageSwitcher />
-          <Link to="/auth" className="hidden sm:inline-flex">
-            <Button variant="ghost" size="sm">{t("nav.login")}</Button>
-          </Link>
-          <Link to="/auth">
-            <Button variant="hero" size="sm">{t("nav.getStarted")}</Button>
-          </Link>
+          {isAuthed ? (
+            <Link to="/dashboard">
+              <Button variant="hero" size="sm">{t("app.nav.dashboard")}</Button>
+            </Link>
+          ) : (
+            <>
+              <Link to="/auth" className="hidden sm:inline-flex">
+                <Button variant="ghost" size="sm">{t("nav.login")}</Button>
+              </Link>
+              <Link to="/auth">
+                <Button variant="hero" size="sm">{t("nav.getStarted")}</Button>
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>
