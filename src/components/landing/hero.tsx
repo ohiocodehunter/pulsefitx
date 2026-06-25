@@ -3,8 +3,16 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight, PlayCircle, Star, Activity, Flame } from "lucide-react";
 import heroImg from "@/assets/hero-models.png";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/lib/i18n";
+import avatar1 from "@/assets/avatars/avatar-1.jpg";
+import avatar2 from "@/assets/avatars/avatar-2.jpg";
+import avatar3 from "@/assets/avatars/avatar-3.jpg";
+import avatar4 from "@/assets/avatars/avatar-4.jpg";
+
+const avatars = [avatar1, avatar2, avatar3, avatar4];
 
 export function Hero() {
+  const { t } = useT();
   return (
     <section id="home" className="relative overflow-hidden">
       <div className="container mx-auto grid items-center gap-10 px-4 py-12 sm:px-6 md:py-20 lg:grid-cols-2 lg:py-24">
@@ -16,34 +24,39 @@ export function Hero() {
         >
           <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary">
             <span className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_8px_currentColor]" />
-            AI Powered Fitness Coach
+            {t("hero.badge")}
           </span>
           <h1 className="mt-5 text-5xl font-black leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
-            Train Smart.<br />
-            Eat Right.<br />
-            <span className="text-gradient-primary">Live Better.</span>
+            {t("hero.title1")}<br />
+            {t("hero.title2")}<br />
+            <span className="text-gradient-primary">{t("hero.title3")}</span>
           </h1>
           <p className="mt-5 max-w-md text-base text-muted-foreground sm:text-lg">
-            Your AI fitness coach that builds personalized plans, tracks progress and helps you become the best version of yourself.
+            {t("hero.subtitle")}
           </p>
           <div className="mt-7 flex flex-wrap items-center gap-3">
             <Link to="/auth">
               <Button variant="hero" size="xl">
-                Start Your Journey <ArrowRight className="ml-1 h-4 w-4" />
+                {t("hero.cta.primary")} <ArrowRight className="ml-1 h-4 w-4" />
               </Button>
             </Link>
             <a href="#how">
               <Button variant="outline" size="xl" className="rounded-full">
-                See How It Works <PlayCircle className="ml-1 h-4 w-4" />
+                {t("hero.cta.secondary")} <PlayCircle className="ml-1 h-4 w-4" />
               </Button>
             </a>
           </div>
           <div className="mt-6 flex items-center gap-4">
             <div className="flex -space-x-2">
-              {[0, 1, 2, 3].map((i) => (
-                <div
+              {avatars.map((src, i) => (
+                <img
                   key={i}
-                  className="h-8 w-8 rounded-full border-2 border-background bg-gradient-to-br from-primary/40 to-violet-500/40"
+                  src={src}
+                  alt=""
+                  loading="lazy"
+                  width={32}
+                  height={32}
+                  className="h-8 w-8 rounded-full border-2 border-background object-cover"
                 />
               ))}
             </div>
@@ -54,7 +67,7 @@ export function Hero() {
                 ))}
               </div>
               <span className="font-semibold">4.9/5</span>
-              <span className="text-muted-foreground">Loved by 10,000+ users</span>
+              <span className="text-muted-foreground">{t("hero.social")}</span>
             </div>
           </div>
         </motion.div>
