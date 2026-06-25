@@ -133,15 +133,23 @@ function ActivityPage() {
             log={log}
             tr={tr}
             onSave={async (p) => {
-              const merged: Partial<DailyLog> = {};
+              if (!user) return;
+              // Always read the freshest log from Firestore so rapid edits
+              // or stale React state never cause an overwrite.
+              const fresh = (await getLog(user.uid, date)) ?? log ?? {
+                date, calories: 0, protein: 0, carbs: 0, fats: 0, water: 0,
+                steps: 0, sleepHours: 0, meals: [],
+              };
+              const next: DailyLog = { ...fresh };
               // Cumulative: add to today's totals.
-              if (typeof p.steps === "number") merged.steps = (log?.steps ?? 0) + p.steps;
+              if (typeof p.steps === "number") next.steps = (fresh.steps ?? 0) + p.steps;
               if (typeof p.distanceKm === "number")
-                merged.distanceKm = Math.round(((log?.distanceKm ?? 0) + p.distanceKm) * 100) / 100;
+                next.distanceKm = Math.round(((fresh.distanceKm ?? 0) + p.distanceKm) * 100) / 100;
               // Snapshot readings: latest value wins.
-              if (typeof p.sleepHours === "number") merged.sleepHours = p.sleepHours;
-              if (typeof p.restingHr === "number") merged.restingHr = p.restingHr;
-              await persist(merged);
+              if (typeof p.sleepHours === "number") next.sleepHours = p.sleepHours;
+              if (typeof p.restingHr === "number") next.restingHr = p.restingHr;
+              await upsertLog(user.uid, date, next);
+              setLog(next);
               toast.success(tr("activity.saved"));
             }}
           />
