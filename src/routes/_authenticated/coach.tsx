@@ -8,7 +8,6 @@ import { useProfile } from "@/lib/profile-context";
 import { useAuth } from "@/lib/auth-context";
 import { getLog, todayKey, type DailyLog } from "@/lib/firestore-data";
 import { chatWithCoach } from "@/lib/ai.functions";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/coach")({
@@ -59,7 +58,17 @@ function Coach() {
       }});
       setMessages((m) => [...m, { role: "assistant", text: r.reply }]);
     } catch (e) {
-      toast.error((e as Error).message);
+      const msg = (e as Error).message;
+      const isHighDemand = /503|high demand|unavailable/i.test(msg);
+      setMessages((m) => [
+        ...m,
+        {
+          role: "assistant",
+          text: isHighDemand
+            ? "AI is having high demand right now. Please wait a moment and try again."
+            : "Something went wrong. Please try again.",
+        },
+      ]);
     } finally { setBusy(false); }
   };
 
