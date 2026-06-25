@@ -8,7 +8,6 @@ import { useProfile } from "@/lib/profile-context";
 import { useAuth } from "@/lib/auth-context";
 import { getLog, todayKey, type DailyLog } from "@/lib/firestore-data";
 import { chatWithCoach } from "@/lib/ai.functions";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/coach")({
