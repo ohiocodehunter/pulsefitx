@@ -132,6 +132,7 @@ export const generateMealPlan = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const system = `You are a nutrition planner. Return STRICT JSON only — no markdown, no commentary.
 All string values (summary, food names, portions, tips) MUST be written in ${data.lang === "ja" ? "Japanese (日本語)" : "English"}.
+IMPORTANT: In the "summary" field, do NOT label the plan as "vegetarian", "non-vegetarian", "vegan", or any diet category. Phrase it neutrally, e.g. "A high-protein plan built around your selected foods to hit your calorie and protein targets."
 Schema:
 {
   "summary": string,
