@@ -5,6 +5,8 @@ import {
   createUserWithEmailAndPassword,
   signOut as fbSignOut,
   signInWithPopup,
+  signInWithCredential,
+  GoogleAuthProvider,
   sendPasswordResetEmail,
   updateProfile,
   deleteUser,
@@ -17,7 +19,7 @@ import { getFirebaseAuth, googleProvider } from "./firebase";
 
 // Detect Android/iOS WebViews where Firebase's signInWithRedirect breaks because
 // sessionStorage is partitioned across the firebaseapp.com auth handler origin.
-function isInAppWebView(): boolean {
+export function isInAppWebView(): boolean {
   if (typeof navigator === "undefined") return false;
   const ua = navigator.userAgent || "";
   // Android WebView: "; wv)" marker. iOS in-app: no "Safari/" token on WebKit.
@@ -26,6 +28,13 @@ function isInAppWebView(): boolean {
   // Common in-app browsers
   const named = /(FBAN|FBAV|Instagram|Line\/|MicroMessenger|TikTok|GSA\/)/i.test(ua);
   return androidWv || iosWv || named;
+}
+
+// True when the host Android app has injected a JS bridge for native Google Sign-In.
+export function hasNativeGoogleBridge(): boolean {
+  if (typeof window === "undefined") return false;
+  const w = window as unknown as { AndroidBridge?: { googleSignIn?: () => void } };
+  return typeof w.AndroidBridge?.googleSignIn === "function";
 }
 
 export interface AuthValue {
@@ -52,7 +61,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(u);
       setLoading(false);
     });
-    return () => unsub();
+    // Expose a global handler that the Android host calls after native Google
+    // Sign-In: webView.evaluateJavascript("window.handleGoogleIdToken('<id>')", null)
+    const w = window as unknown as {
+      handleGoogleIdToken?: (idToken: string) => Promise<void>;
+    };
+    w.handleGoogleIdToken = async (idToken: string) => {
+      const credential = GoogleAuthProvider.credential(idToken);
+      await signInWithCredential(getFirebaseAuth(), credential);
+    };
+    return () => {
+      unsub();
+      try {
+        delete (window as unknown as Record<string, unknown>).handleGoogleIdToken;
+      } catch {
+        /* ignore */
+      }
+    };
   }, []);
 
   const value: AuthValue = {
@@ -66,9 +91,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (name) await updateProfile(cred.user, { displayName: name });
     },
     signInWithGoogle: async () => {
+      // Prefer the native Android Google Sign-In bridge when the host app exposes it.
+      if (hasNativeGoogleBridge()) {
+        const w = window as unknown as { AndroidBridge: { googleSignIn: () => void } };
+        w.AndroidBridge.googleSignIn();
+        return;
+      }
       if (isInAppWebView()) {
         throw new Error(
-          "Google sign-in isn't supported inside in-app browsers / WebViews. Please use Email & Password here, or open this site in Chrome/Safari to continue with Google.",
+          "Google sign-in isn't supported inside this in-app browser. Please use Email & Password here, or open this site in Chrome/Safari to continue with Google.",
         );
       }
       try {
