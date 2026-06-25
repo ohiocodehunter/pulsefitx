@@ -11,10 +11,10 @@ export function SiteHeader() {
       <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6">
         <Link to="/" className="flex items-center"><Logo /></Link>
         <nav className="hidden items-center gap-8 text-sm font-medium md:flex">
-          <a href="#home" className="text-foreground/90 underline-offset-8 hover:underline">{t("nav.home")}</a>
-          <a href="#features" className="text-foreground/70 hover:text-foreground">{t("nav.features")}</a>
-          <a href="#how" className="text-foreground/70 hover:text-foreground">{t("nav.how")}</a>
-          <a href="#plans" className="text-foreground/70 hover:text-foreground">{t("nav.plans")}</a>
+          <Link to="/" hash="home" className="text-foreground/90 underline-offset-8 hover:underline">{t("nav.home")}</Link>
+          <Link to="/" hash="features" className="text-foreground/70 hover:text-foreground">{t("nav.features")}</Link>
+          <Link to="/" hash="how" className="text-foreground/70 hover:text-foreground">{t("nav.how")}</Link>
+          <Link to="/" hash="plans" className="text-foreground/70 hover:text-foreground">{t("nav.plans")}</Link>
           <Link to="/about" className="text-foreground/70 hover:text-foreground">{t("nav.about")}</Link>
         </nav>
         <div className="flex items-center gap-2">
