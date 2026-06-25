@@ -6,6 +6,9 @@ import { FeaturePills } from "@/components/landing/feature-pills";
 import { FeatureCards } from "@/components/landing/feature-cards";
 import { CtaStrip } from "@/components/landing/cta-strip";
 import { HowItWorks } from "@/components/landing/how-it-works";
+import { StatsBand } from "@/components/landing/stats-band";
+import { Testimonials } from "@/components/landing/testimonials";
+import { Faq } from "@/components/landing/faq";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -27,9 +30,12 @@ function Index() {
       <main>
         <Hero />
         <FeaturePills />
+        <StatsBand />
         <FeatureCards />
-        <CtaStrip />
         <HowItWorks />
+        <Testimonials />
+        <Faq />
+        <CtaStrip />
       </main>
       <SiteFooter />
     </div>
