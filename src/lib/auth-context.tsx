@@ -5,6 +5,7 @@ import {
   createUserWithEmailAndPassword,
   signOut as fbSignOut,
   signInWithPopup,
+  signInWithRedirect,
   sendPasswordResetEmail,
   updateProfile,
   deleteUser,
@@ -53,7 +54,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (name) await updateProfile(cred.user, { displayName: name });
     },
     signInWithGoogle: async () => {
-      await signInWithPopup(getFirebaseAuth(), googleProvider);
+      try {
+        await signInWithPopup(getFirebaseAuth(), googleProvider);
+      } catch (e) {
+        const code = (e as { code?: string }).code;
+        // Popup blocked / closed by user / browser policy — fall back to redirect.
+        if (
+          code === "auth/popup-blocked" ||
+          code === "auth/popup-closed-by-user" ||
+          code === "auth/cancelled-popup-request" ||
+          code === "auth/operation-not-supported-in-this-environment"
+        ) {
+          await signInWithRedirect(getFirebaseAuth(), googleProvider);
+          return;
+        }
+        throw e;
+      }
     },
     resetPassword: async (email) => {
       await sendPasswordResetEmail(getFirebaseAuth(), email);

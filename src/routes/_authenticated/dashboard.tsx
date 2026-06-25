@@ -74,14 +74,14 @@ function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
+      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3 sm:flex sm:flex-wrap sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="truncate text-xl font-black tracking-tight sm:text-3xl">
             {greet}, {profile.name.split(" ")[0] || "there"}!
           </h1>
-          <p className="text-sm text-muted-foreground">Let's make today healthier than yesterday.</p>
+          <p className="text-xs text-muted-foreground sm:text-sm">Let's make today healthier than yesterday.</p>
         </div>
-        <Button variant="hero" size="sm" onClick={() => navigate({ to: "/coach" })}>
+        <Button variant="hero" size="sm" onClick={() => navigate({ to: "/coach" })} className="shrink-0">
           <Bot className="h-4 w-4" /> AI Coach
         </Button>
       </header>
