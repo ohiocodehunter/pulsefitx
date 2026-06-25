@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Apple, Activity, BarChart3, Bot, Utensils, Flame, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, Apple, Activity, BarChart3, Bot, Utensils, Flame, LogOut, Menu, X, User as UserIcon } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ const nav = [
   { to: "/meals", label: "Meal Planner", icon: Utensils },
   { to: "/streaks", label: "Streaks", icon: Flame },
   { to: "/reports", label: "Reports", icon: BarChart3 },
+  { to: "/profile", label: "Profile", icon: UserIcon },
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -78,9 +79,13 @@ function SidebarContent({ onNavigate }: { onNavigate: () => void }) {
       </nav>
       <div className="border-t border-border/60 p-4">
         <div className="flex items-center gap-3">
-          <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-primary to-violet-500 text-sm font-bold text-primary-foreground">
-            {(profile.name || user?.email || "?").charAt(0).toUpperCase()}
-          </div>
+          <Link to="/profile" onClick={onNavigate} className="grid h-9 w-9 place-items-center overflow-hidden rounded-full bg-gradient-to-br from-primary to-violet-500 text-sm font-bold text-primary-foreground">
+            {profile.avatarDataUrl ? (
+              <img src={profile.avatarDataUrl} alt="avatar" className="h-full w-full object-cover" />
+            ) : (
+              (profile.name || user?.email || "?").charAt(0).toUpperCase()
+            )}
+          </Link>
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-semibold">{profile.name || "Member"}</div>
             <div className="truncate text-[11px] text-muted-foreground">{user?.email}</div>

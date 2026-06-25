@@ -3,6 +3,7 @@ import {
   getDoc,
   setDoc,
   updateDoc,
+  deleteDoc,
   collection,
   query,
   where,
@@ -31,6 +32,8 @@ export interface UserProfile {
   healthConditions: string[];
   targets: FitnessTargets;
   onboardingComplete: boolean;
+  avatarDataUrl?: string;
+  bio?: string;
   createdAt?: Timestamp;
 }
 
@@ -44,7 +47,35 @@ export interface DailyLog {
   steps: number;
   sleepHours: number;
   meals: Array<{ name: string; calories: number; protein: number }>;
+  workouts?: Workout[];
+  distanceKm?: number;
+  activeMinutes?: number;
+  restingHr?: number;
+  mood?: 1 | 2 | 3 | 4 | 5;
+  energy?: 1 | 2 | 3 | 4 | 5;
   notes?: string;
+}
+
+export interface Workout {
+  id: string;
+  type: string; // Running, Cycling, Strength, Yoga, HIIT, Walking, Swimming
+  durationMin: number;
+  calories: number;
+  distanceKm?: number;
+  intensity?: "low" | "moderate" | "high";
+  notes?: string;
+}
+
+/** Recovery score 0-100 from sleep + resting HR + active minutes balance. */
+export function recoveryScore(log: Partial<DailyLog> | null | undefined): number {
+  if (!log) return 0;
+  const sleep = log.sleepHours ?? 0;
+  const active = log.activeMinutes ?? 0;
+  const rhr = log.restingHr ?? 0;
+  const sleepScore = Math.min(50, (sleep / 8) * 50); // 0..50
+  const rhrScore = rhr > 0 ? Math.max(0, 30 - Math.max(0, rhr - 55)) : 20; // lower is better
+  const balance = active > 0 && active < 120 ? 20 : active >= 120 ? 12 : 8;
+  return Math.round(Math.min(100, sleepScore + rhrScore + balance));
 }
 
 export function todayKey(d = new Date()): string {
@@ -84,6 +115,16 @@ export async function getRecentLogs(uid: string, days = 7): Promise<DailyLog[]> 
   );
   const snaps = await getDocs(q);
   return snaps.docs.map((d) => d.data() as DailyLog).reverse();
+}
+
+export async function deleteAllUserData(uid: string) {
+  const db = getDb();
+  const subs = ["logs", "weights"] as const;
+  for (const sub of subs) {
+    const snaps = await getDocs(collection(db, "users", uid, sub));
+    await Promise.all(snaps.docs.map((d) => deleteDoc(d.ref)));
+  }
+  await deleteDoc(doc(db, "users", uid));
 }
 
 export async function addWeight(uid: string, weightKg: number, bodyFat?: number) {
