@@ -107,14 +107,15 @@ function NutritionPage() {
     (m): m is MealEntry => !!m && typeof m === "object" && "meal" in m,
   );
 
-  const totals = useMemo(() => {
-    return entries.reduce(
-      (acc, m) => ({
-        cal: acc.cal + m.cal, p: acc.p + m.p, c: acc.c + m.c, f: acc.f + m.f,
-      }),
-      { cal: 0, p: 0, c: 0, f: 0 },
-    );
-  }, [entries]);
+  // Combined daily totals — include both meal entries AND values logged from
+  // other surfaces (e.g. Dashboard Quick Log). The stored log fields are the
+  // source of truth so numbers stay consistent across the app.
+  const totals = useMemo(() => ({
+    cal: log?.calories ?? 0,
+    p: log?.protein ?? 0,
+    c: log?.carbs ?? 0,
+    f: log?.fats ?? 0,
+  }), [log]);
 
   const t = profile.targets;
   const MEAL_LABEL: Record<MealKey, string> = {
@@ -141,34 +142,38 @@ function NutritionPage() {
     } finally { setSaving(false); }
   };
 
+  const round1 = (n: number) => Math.round(n * 10) / 10;
+
   const addEntry = async (meal: MealKey, food: Food, servings: number) => {
     const e: MealEntry = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       meal, name: food.name, servings,
       cal: Math.round(food.cal * servings),
-      p: Math.round(food.p * servings * 10) / 10,
-      c: Math.round(food.c * servings * 10) / 10,
-      f: Math.round(food.f * servings * 10) / 10,
+      p: round1(food.p * servings),
+      c: round1(food.c * servings),
+      f: round1(food.f * servings),
     };
     const next = [...entries, e];
-    const tot = next.reduce((a, m) => ({
-      cal: a.cal + m.cal, p: a.p + m.p, c: a.c + m.c, f: a.f + m.f,
-    }), { cal: 0, p: 0, c: 0, f: 0 });
     await persist({
       meals: next as unknown as DailyLog["meals"],
-      calories: tot.cal, protein: tot.p, carbs: tot.c, fats: tot.f,
+      calories: (log?.calories ?? 0) + e.cal,
+      protein: round1((log?.protein ?? 0) + e.p),
+      carbs: round1((log?.carbs ?? 0) + e.c),
+      fats: round1((log?.fats ?? 0) + e.f),
     });
     toast.success(`Added ${food.name}`);
   };
 
   const removeEntry = async (id: string) => {
+    const removed = entries.find((e) => e.id === id);
+    if (!removed) return;
     const next = entries.filter((e) => e.id !== id);
-    const tot = next.reduce((a, m) => ({
-      cal: a.cal + m.cal, p: a.p + m.p, c: a.c + m.c, f: a.f + m.f,
-    }), { cal: 0, p: 0, c: 0, f: 0 });
     await persist({
       meals: next as unknown as DailyLog["meals"],
-      calories: tot.cal, protein: tot.p, carbs: tot.c, fats: tot.f,
+      calories: Math.max(0, (log?.calories ?? 0) - removed.cal),
+      protein: Math.max(0, round1((log?.protein ?? 0) - removed.p)),
+      carbs: Math.max(0, round1((log?.carbs ?? 0) - removed.c)),
+      fats: Math.max(0, round1((log?.fats ?? 0) - removed.f)),
     });
   };
 
