@@ -7,6 +7,10 @@ import {
   signInWithPopup,
   sendPasswordResetEmail,
   updateProfile,
+  deleteUser,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  reauthenticateWithPopup,
   type User,
 } from "firebase/auth";
 import { getFirebaseAuth, googleProvider } from "./firebase";
@@ -19,6 +23,7 @@ export interface AuthValue {
   signInWithGoogle: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   signOut: () => Promise<void>;
+  deleteAccount: (password?: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthValue | null>(null);
@@ -55,6 +60,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     signOut: async () => {
       await fbSignOut(getFirebaseAuth());
+    },
+    deleteAccount: async (password?: string) => {
+      const auth = getFirebaseAuth();
+      const u = auth.currentUser;
+      if (!u) throw new Error("Not signed in");
+      try {
+        await deleteUser(u);
+      } catch (e) {
+        const code = (e as { code?: string }).code;
+        if (code !== "auth/requires-recent-login") throw e;
+        const isGoogle = u.providerData.some((p) => p.providerId === "google.com");
+        if (isGoogle) {
+          await reauthenticateWithPopup(u, googleProvider);
+        } else {
+          if (!password) throw new Error("Please enter your password to confirm");
+          if (!u.email) throw new Error("No email on account");
+          const cred = EmailAuthProvider.credential(u.email, password);
+          await reauthenticateWithCredential(u, cred);
+        }
+        await deleteUser(u);
+      }
     },
   };
 
