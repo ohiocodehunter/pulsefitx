@@ -67,6 +67,11 @@ async function callGemini(prompt: string, system?: string): Promise<string> {
   throw lastError ?? new Error("All Gemini models are busy. Please try again later.");
 }
 
+function langInstruction(lang?: string): string {
+  if (lang === "ja") return "Respond ONLY in natural Japanese (日本語). Use polite/casual tone appropriate for fitness coaching.";
+  return "Respond in English.";
+}
+
 /** Chat with the AI fitness coach. */
 export const chatWithCoach = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
@@ -89,6 +94,7 @@ export const chatWithCoach = createServerFn({ method: "POST" })
           .array(z.object({ role: z.enum(["user", "assistant"]), text: z.string() }))
           .max(20)
           .optional(),
+        lang: z.enum(["en", "ja"]).optional(),
       })
       .parse(input),
   )
@@ -97,6 +103,7 @@ export const chatWithCoach = createServerFn({ method: "POST" })
     const system = `You are PulsefitX, a sharp, encouraging AI fitness coach.
 Be concise (3-6 sentences), specific, and action-oriented. Never give generic motivational fluff.
 Use the user's actual numbers when relevant. If you suggest a change, name the exact amount.
+${langInstruction(data.lang)}
 
 User profile: ${ctx ? JSON.stringify(ctx) : "unknown"}.`;
     const transcript = (data.history ?? [])
@@ -118,11 +125,13 @@ export const generateMealPlan = createServerFn({ method: "POST" })
         diet: z.enum(["vegetarian", "non_vegetarian", "vegan"]),
         lifestyle: z.enum(["hostel", "home", "office", "solo"]),
         budget: z.enum(["low", "medium", "high"]),
+        lang: z.enum(["en", "ja"]).optional(),
       })
       .parse(input),
   )
   .handler(async ({ data }) => {
     const system = `You are a nutrition planner. Return STRICT JSON only — no markdown, no commentary.
+All string values (summary, food names, portions, tips) MUST be written in ${data.lang === "ja" ? "Japanese (日本語)" : "English"}.
 Schema:
 {
   "summary": string,
@@ -178,12 +187,14 @@ export const generateCoachInsight = createServerFn({ method: "POST" })
         todaySteps: z.number(),
         todayWater: z.number(),
         goal: z.string(),
+        lang: z.enum(["en", "ja"]).optional(),
       })
       .parse(input),
   )
   .handler(async ({ data }) => {
     const system =
-      "You are a fitness coach. Give ONE specific, numeric, actionable recommendation in 1-2 sentences based on the gap to today's goals. No generic motivation.";
+      "You are a fitness coach. Give ONE specific, numeric, actionable recommendation in 1-2 sentences based on the gap to today's goals. No generic motivation. " +
+      langInstruction(data.lang);
     const prompt = `Goal: ${data.goal}
 Today so far:
 - Calories: ${data.todayCalories}/${data.calorieGoal} kcal
