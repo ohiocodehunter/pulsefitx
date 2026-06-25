@@ -16,6 +16,7 @@ import { useProfile } from "@/lib/profile-context";
 import { calcTargets } from "@/lib/calculations";
 import { saveProfile, deleteAllUserData } from "@/lib/firestore-data";
 import { toast } from "sonner";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   ssr: false,
@@ -38,6 +39,7 @@ async function fileToResizedDataUrl(file: File, max = 256): Promise<string> {
 function ProfilePage() {
   const { user, deleteAccount, signOut } = useAuth();
   const { profile, setProfile } = useProfile();
+  const { t: tr } = useT();
   const navigate = useNavigate();
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -67,10 +69,10 @@ function ProfilePage() {
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((f) => ({ ...f, [k]: v }));
 
   const onAvatar = async (file: File) => {
-    if (file.size > 5 * 1024 * 1024) return toast.error("Image too large (max 5MB)");
+    if (file.size > 5 * 1024 * 1024) return toast.error(tr("profile.tooLarge"));
     const url = await fileToResizedDataUrl(file, 256);
     setAvatar(url);
-    toast.success("Avatar updated — remember to save");
+    toast.success(tr("profile.avatarUpdated"));
   };
 
   const save = async () => {
@@ -89,23 +91,23 @@ function ProfilePage() {
       };
       await saveProfile(user.uid, next);
       setProfile(next);
-      toast.success("Profile saved");
+      toast.success(tr("profile.saved"));
     } catch (e) { toast.error((e as Error).message); }
     finally { setSaving(false); }
   };
 
   const confirmDelete = async () => {
     if (!user) return;
-    if (confirmText !== "DELETE") return toast.error('Type "DELETE" to confirm');
+    if (confirmText !== "DELETE") return toast.error(tr("profile.del.typeErr"));
     setDeleting(true);
     try {
       await deleteAllUserData(user.uid);
       await deleteAccount(needsPassword ? password : undefined);
-      toast.success("Account deleted");
+      toast.success(tr("profile.del.success"));
       navigate({ to: "/", replace: true });
     } catch (e) {
       const msg = (e as Error).message;
-      toast.error(msg.includes("wrong-password") ? "Incorrect password" : msg);
+      toast.error(msg.includes("wrong-password") ? tr("profile.del.wrongPw") : msg);
       setDeleting(false);
     }
   };
@@ -113,8 +115,8 @@ function ProfilePage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <header>
-        <h1 className="text-2xl font-black sm:text-3xl">Your Profile</h1>
-        <p className="text-sm text-muted-foreground">Personal details that shape your plan & coaching.</p>
+        <h1 className="text-2xl font-black sm:text-3xl">{tr("profile.title")}</h1>
+        <p className="text-sm text-muted-foreground">{tr("profile.subtitle")}</p>
       </header>
 
       {/* Avatar card */}
@@ -137,10 +139,10 @@ function ProfilePage() {
               onChange={(e) => { const f = e.target.files?.[0]; if (f) onAvatar(f); }} />
           </div>
           <div className="min-w-0">
-            <div className="text-lg font-bold">{form.name || "Unnamed"}</div>
+            <div className="text-lg font-bold">{form.name || tr("profile.unnamed")}</div>
             <div className="truncate text-sm text-muted-foreground">{user?.email}</div>
             {avatar && (
-              <button onClick={() => setAvatar(undefined)} className="mt-1 text-xs text-muted-foreground underline">Remove photo</button>
+              <button onClick={() => setAvatar(undefined)} className="mt-1 text-xs text-muted-foreground underline">{tr("profile.removePhoto")}</button>
             )}
           </div>
         </div>
@@ -148,91 +150,91 @@ function ProfilePage() {
 
       {/* Basic */}
       <section className="rounded-2xl border border-border/60 bg-card/70 p-5">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Basic Info</h2>
+        <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{tr("profile.basic")}</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <Field label="Name"><Input value={form.name} onChange={(e) => set("name", e.target.value)} /></Field>
-          <Field label="Age"><Input type="number" value={form.age} onChange={(e) => set("age", Number(e.target.value))} /></Field>
-          <Field label="Gender">
+          <Field label={tr("profile.name")}><Input value={form.name} onChange={(e) => set("name", e.target.value)} /></Field>
+          <Field label={tr("profile.age")}><Input type="number" value={form.age} onChange={(e) => set("age", Number(e.target.value))} /></Field>
+          <Field label={tr("profile.gender")}>
             <Select value={form.gender} onValueChange={(v) => set("gender", v as typeof form.gender)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="male">Male</SelectItem>
-                <SelectItem value="female">Female</SelectItem>
+                <SelectItem value="male">{tr("profile.male")}</SelectItem>
+                <SelectItem value="female">{tr("profile.female")}</SelectItem>
               </SelectContent>
             </Select>
           </Field>
-          <Field label="Height (cm)"><Input type="number" value={form.heightCm} onChange={(e) => set("heightCm", Number(e.target.value))} /></Field>
-          <Field label="Weight (kg)"><Input type="number" step="0.1" value={form.weightKg} onChange={(e) => set("weightKg", Number(e.target.value))} /></Field>
-          <Field label="Bio">
-            <Textarea rows={2} value={form.bio} onChange={(e) => set("bio", e.target.value)} placeholder="Tell us about your fitness journey" />
+          <Field label={tr("profile.height")}><Input type="number" value={form.heightCm} onChange={(e) => set("heightCm", Number(e.target.value))} /></Field>
+          <Field label={tr("profile.weight")}><Input type="number" step="0.1" value={form.weightKg} onChange={(e) => set("weightKg", Number(e.target.value))} /></Field>
+          <Field label={tr("profile.bio")}>
+            <Textarea rows={2} value={form.bio} onChange={(e) => set("bio", e.target.value)} placeholder={tr("profile.bioPlaceholder")} />
           </Field>
         </div>
       </section>
 
       {/* Plan */}
       <section className="rounded-2xl border border-border/60 bg-card/70 p-5">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Plan Preferences</h2>
+        <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{tr("profile.plan")}</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <Field label="Goal">
+          <Field label={tr("profile.goal")}>
             <Select value={form.goal} onValueChange={(v) => set("goal", v as typeof form.goal)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="lose">Weight Loss</SelectItem>
-                <SelectItem value="maintain">Maintain</SelectItem>
-                <SelectItem value="gain">Weight Gain</SelectItem>
-                <SelectItem value="muscle">Muscle Gain</SelectItem>
+                <SelectItem value="lose">{tr("goal.lose")}</SelectItem>
+                <SelectItem value="maintain">{tr("goal.maintain")}</SelectItem>
+                <SelectItem value="gain">{tr("goal.gain")}</SelectItem>
+                <SelectItem value="muscle">{tr("goal.muscle")}</SelectItem>
               </SelectContent>
             </Select>
           </Field>
-          <Field label="Activity Level">
+          <Field label={tr("profile.activity")}>
             <Select value={form.activity} onValueChange={(v) => set("activity", v as typeof form.activity)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="sedentary">Sedentary</SelectItem>
-                <SelectItem value="light">Lightly Active</SelectItem>
-                <SelectItem value="moderate">Moderately Active</SelectItem>
-                <SelectItem value="active">Very Active</SelectItem>
-                <SelectItem value="very_active">Athlete</SelectItem>
+                <SelectItem value="sedentary">{tr("profile.sedentary")}</SelectItem>
+                <SelectItem value="light">{tr("profile.light")}</SelectItem>
+                <SelectItem value="moderate">{tr("profile.moderate")}</SelectItem>
+                <SelectItem value="active">{tr("profile.veryActive")}</SelectItem>
+                <SelectItem value="very_active">{tr("profile.athlete")}</SelectItem>
               </SelectContent>
             </Select>
           </Field>
-          <Field label="Diet">
+          <Field label={tr("profile.diet")}>
             <Select value={form.diet} onValueChange={(v) => set("diet", v as typeof form.diet)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="vegetarian">Vegetarian</SelectItem>
-                <SelectItem value="non_vegetarian">Non-Vegetarian</SelectItem>
-                <SelectItem value="vegan">Vegan</SelectItem>
+                <SelectItem value="vegetarian">{tr("profile.vegetarian")}</SelectItem>
+                <SelectItem value="non_vegetarian">{tr("profile.nonVeg")}</SelectItem>
+                <SelectItem value="vegan">{tr("profile.vegan")}</SelectItem>
               </SelectContent>
             </Select>
           </Field>
-          <Field label="Lifestyle">
+          <Field label={tr("profile.lifestyle")}>
             <Select value={form.lifestyle} onValueChange={(v) => set("lifestyle", v as typeof form.lifestyle)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="hostel">Hostel</SelectItem>
-                <SelectItem value="home">Home</SelectItem>
-                <SelectItem value="office">Office</SelectItem>
-                <SelectItem value="solo">Solo Living</SelectItem>
+                <SelectItem value="hostel">{tr("profile.hostel")}</SelectItem>
+                <SelectItem value="home">{tr("profile.home")}</SelectItem>
+                <SelectItem value="office">{tr("profile.office")}</SelectItem>
+                <SelectItem value="solo">{tr("profile.solo")}</SelectItem>
               </SelectContent>
             </Select>
           </Field>
-          <Field label="Budget">
+          <Field label={tr("profile.budget")}>
             <Select value={form.budget} onValueChange={(v) => set("budget", v as typeof form.budget)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="low">{tr("profile.low")}</SelectItem>
+                <SelectItem value="medium">{tr("profile.medium")}</SelectItem>
+                <SelectItem value="high">{tr("profile.high")}</SelectItem>
               </SelectContent>
             </Select>
           </Field>
         </div>
         <div className="mt-5 flex justify-end gap-2">
-          <Button variant="ghost" onClick={() => signOut()}>Sign out</Button>
+          <Button variant="ghost" onClick={() => signOut()}>{tr("profile.signOut")}</Button>
           <Button variant="hero" onClick={save} disabled={saving}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            Save Changes
+            {tr("profile.save")}
           </Button>
         </div>
       </section>
@@ -244,13 +246,11 @@ function ProfilePage() {
             <ShieldAlert className="h-5 w-5" />
           </div>
           <div className="flex-1">
-            <h3 className="font-bold text-destructive">Danger Zone</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Permanently delete your account, profile, logs and history. This action cannot be undone.
-            </p>
+            <h3 className="font-bold text-destructive">{tr("profile.danger")}</h3>
+            <p className="mt-1 text-sm text-muted-foreground">{tr("profile.dangerDesc")}</p>
           </div>
           <Button variant="destructive" onClick={() => { setStep(1); setConfirmText(""); setPassword(""); setDelOpen(true); }}>
-            <Trash2 className="h-4 w-4" /> Delete Account
+            <Trash2 className="h-4 w-4" /> {tr("profile.delete")}
           </Button>
         </div>
       </section>
@@ -261,48 +261,45 @@ function ProfilePage() {
             <>
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2 text-destructive">
-                  <AlertTriangle className="h-5 w-5" /> Delete your account?
+                  <AlertTriangle className="h-5 w-5" /> {tr("profile.del.title")}
                 </DialogTitle>
-                <DialogDescription>
-                  This will permanently erase your profile, all daily logs, workouts, weight history and sign-in credentials.
-                  You will not be able to recover any of this data.
-                </DialogDescription>
+                <DialogDescription>{tr("profile.del.desc")}</DialogDescription>
               </DialogHeader>
               <ul className="space-y-1 rounded-xl bg-secondary/40 p-3 text-xs text-muted-foreground">
                 <li>• {profile.name || user?.email}</li>
-                <li>• All meal, workout and recovery logs</li>
-                <li>• Weight & body composition history</li>
+                <li>• {tr("profile.del.logs")}</li>
+                <li>• {tr("profile.del.weight")}</li>
               </ul>
               <DialogFooter>
-                <Button variant="ghost" onClick={() => setDelOpen(false)}>Cancel</Button>
-                <Button variant="destructive" onClick={() => setStep(2)}>I understand, continue</Button>
+                <Button variant="ghost" onClick={() => setDelOpen(false)}>{tr("profile.del.cancel")}</Button>
+                <Button variant="destructive" onClick={() => setStep(2)}>{tr("profile.del.continue")}</Button>
               </DialogFooter>
             </>
           ) : (
             <>
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2 text-destructive">
-                  <AlertTriangle className="h-5 w-5" /> Final confirmation
+                  <AlertTriangle className="h-5 w-5" /> {tr("profile.del.final")}
                 </DialogTitle>
                 <DialogDescription>
-                  Type <span className="font-mono font-bold text-destructive">DELETE</span> below to confirm.
+                  {tr("profile.del.typeDelete")} <span className="font-mono font-bold text-destructive">DELETE</span> {tr("profile.del.toConfirm")}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-3">
-                <Input value={confirmText} onChange={(e) => setConfirmText(e.target.value)} placeholder='Type "DELETE"' />
+                <Input value={confirmText} onChange={(e) => setConfirmText(e.target.value)} placeholder={tr("profile.del.placeholder")} />
                 {needsPassword && (
                   <div>
-                    <Label className="text-xs">Confirm your password</Label>
+                    <Label className="text-xs">{tr("profile.del.password")}</Label>
                     <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
                   </div>
                 )}
               </div>
               <DialogFooter>
-                <Button variant="ghost" onClick={() => setStep(1)} disabled={deleting}>Back</Button>
+                <Button variant="ghost" onClick={() => setStep(1)} disabled={deleting}>{tr("profile.del.back")}</Button>
                 <Button variant="destructive" onClick={confirmDelete}
                   disabled={deleting || confirmText !== "DELETE" || (needsPassword && !password)}>
                   {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                  Permanently delete
+                  {tr("profile.del.perm")}
                 </Button>
               </DialogFooter>
             </>
