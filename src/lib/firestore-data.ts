@@ -119,12 +119,38 @@ export async function getRecentLogs(uid: string, days = 7): Promise<DailyLog[]> 
 
 export async function deleteAllUserData(uid: string) {
   const db = getDb();
-  const subs = ["logs", "weights"] as const;
+  const subs = ["logs", "weights", "mealPlans"] as const;
   for (const sub of subs) {
     const snaps = await getDocs(collection(db, "users", uid, sub));
     await Promise.all(snaps.docs.map((d) => deleteDoc(d.ref)));
   }
   await deleteDoc(doc(db, "users", uid));
+}
+
+// ---------- Saved AI meal plans ----------
+export interface SavedMealPlan {
+  id: string;
+  createdAt: number; // ms epoch
+  foods: string[];
+  plan: unknown; // full plan object from generateMealPlan
+}
+
+export async function saveMealPlan(uid: string, plan: SavedMealPlan) {
+  await setDoc(doc(getDb(), "users", uid, "mealPlans", plan.id), plan);
+}
+
+export async function listMealPlans(uid: string): Promise<SavedMealPlan[]> {
+  const q = query(
+    collection(getDb(), "users", uid, "mealPlans"),
+    orderBy("createdAt", "desc"),
+    limit(50),
+  );
+  const snaps = await getDocs(q);
+  return snaps.docs.map((d) => d.data() as SavedMealPlan);
+}
+
+export async function deleteMealPlan(uid: string, id: string) {
+  await deleteDoc(doc(getDb(), "users", uid, "mealPlans", id));
 }
 
 export async function addWeight(uid: string, weightKg: number, bodyFat?: number) {

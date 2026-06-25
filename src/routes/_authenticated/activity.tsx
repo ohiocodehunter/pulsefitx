@@ -132,7 +132,18 @@ function ActivityPage() {
           <QuickLogger
             log={log}
             tr={tr}
-            onSave={async (p) => { await persist(p); toast.success(tr("activity.saved")); }}
+            onSave={async (p) => {
+              const merged: Partial<DailyLog> = {};
+              // Cumulative: add to today's totals.
+              if (typeof p.steps === "number") merged.steps = (log?.steps ?? 0) + p.steps;
+              if (typeof p.distanceKm === "number")
+                merged.distanceKm = Math.round(((log?.distanceKm ?? 0) + p.distanceKm) * 100) / 100;
+              // Snapshot readings: latest value wins.
+              if (typeof p.sleepHours === "number") merged.sleepHours = p.sleepHours;
+              if (typeof p.restingHr === "number") merged.restingHr = p.restingHr;
+              await persist(merged);
+              toast.success(tr("activity.saved"));
+            }}
           />
         </motion.section>
 
