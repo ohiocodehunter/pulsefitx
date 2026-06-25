@@ -6,16 +6,18 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { useProfile } from "@/lib/profile-context";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 const nav = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/nutrition", label: "Nutrition", icon: Apple },
-  { to: "/activity", label: "Activity", icon: Activity },
-  { to: "/coach", label: "AI Coach", icon: Bot },
-  { to: "/meals", label: "Meal Planner", icon: Utensils },
-  { to: "/streaks", label: "Streaks", icon: Flame },
-  { to: "/reports", label: "Reports", icon: BarChart3 },
-  { to: "/profile", label: "Profile", icon: UserIcon },
+  { to: "/dashboard", key: "app.nav.dashboard", icon: LayoutDashboard },
+  { to: "/nutrition", key: "app.nav.nutrition", icon: Apple },
+  { to: "/activity", key: "app.nav.activity", icon: Activity },
+  { to: "/coach", key: "app.nav.coach", icon: Bot },
+  { to: "/meals", key: "app.nav.meals", icon: Utensils },
+  { to: "/streaks", key: "app.nav.streaks", icon: Flame },
+  { to: "/reports", key: "app.nav.reports", icon: BarChart3 },
+  { to: "/profile", key: "app.nav.profile", icon: UserIcon },
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -43,6 +45,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
           <Logo />
+          <div className="ml-auto"><LanguageSwitcher /></div>
         </header>
         <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
@@ -53,12 +56,16 @@ export function AppShell({ children }: { children: ReactNode }) {
 function SidebarContent({ onNavigate }: { onNavigate: () => void }) {
   const { signOut, user } = useAuth();
   const { profile } = useProfile();
+  const { t } = useT();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
     <>
-      <div className="px-5 py-5"><Logo /></div>
+      <div className="flex items-center justify-between px-5 py-5">
+        <Logo />
+        <LanguageSwitcher />
+      </div>
       <nav className="flex-1 space-y-1 px-3">
-        {nav.map(({ to, label, icon: Icon }) => {
+        {nav.map(({ to, key, icon: Icon }) => {
           const active = pathname === to;
           return (
             <Link
@@ -72,7 +79,7 @@ function SidebarContent({ onNavigate }: { onNavigate: () => void }) {
                   : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground",
               )}
             >
-              <Icon className="h-4 w-4" /> {label}
+              <Icon className="h-4 w-4" /> {t(key)}
             </Link>
           );
         })}
@@ -87,10 +94,10 @@ function SidebarContent({ onNavigate }: { onNavigate: () => void }) {
             )}
           </Link>
           <div className="min-w-0 flex-1">
-            <div className="truncate text-sm font-semibold">{profile.name || "Member"}</div>
+            <div className="truncate text-sm font-semibold">{profile.name || t("app.nav.member")}</div>
             <div className="truncate text-[11px] text-muted-foreground">{user?.email}</div>
           </div>
-          <Button variant="ghost" size="icon" onClick={signOut} title="Sign out">
+          <Button variant="ghost" size="icon" onClick={signOut} title={t("app.nav.signOut")}>
             <LogOut className="h-4 w-4" />
           </Button>
         </div>

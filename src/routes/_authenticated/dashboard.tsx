@@ -11,6 +11,7 @@ import { useProfile } from "@/lib/profile-context";
 import { getLog, getRecentLogs, todayKey, upsertLog, type DailyLog } from "@/lib/firestore-data";
 import { generateCoachInsight } from "@/lib/ai.functions";
 import { toast } from "sonner";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard - PulsefitX" }] }),
@@ -20,6 +21,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 function Dashboard() {
   const { user } = useAuth();
   const { profile } = useProfile();
+  const { t: tr } = useT();
   const navigate = useNavigate();
   const date = todayKey();
   const [log, setLog] = useState<DailyLog | null>(null);
@@ -42,7 +44,7 @@ function Dashboard() {
   const w = log?.water ?? 0;
 
   const hour = new Date().getHours();
-  const greet = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
+  const greet = hour < 12 ? tr("app.greet.morning") : hour < 17 ? tr("app.greet.afternoon") : tr("app.greet.evening");
 
   const requestInsight = async () => {
     setInsightLoading(true);

@@ -16,6 +16,7 @@ import {
 } from "@/lib/firestore-data";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/nutrition")({
   ssr: false,
@@ -46,12 +47,32 @@ const FOODS: Food[] = [
   { name: "Broccoli", unit: "100 g", cal: 35, p: 2.4, c: 7, f: 0.4 },
   { name: "Sweet potato", unit: "100 g", cal: 86, p: 1.6, c: 20, f: 0.1 },
   { name: "Olive oil", unit: "1 tbsp", cal: 119, p: 0, c: 0, f: 13.5 },
+  // ----- Japanese / washoku staples -----
+  { name: "白ごはん / White rice (cooked)", unit: "1 bowl (150 g)", cal: 252, p: 3.8, c: 55, f: 0.5 },
+  { name: "玄米 / Brown rice (cooked)", unit: "1 bowl (150 g)", cal: 165, p: 3.5, c: 35, f: 1.3 },
+  { name: "味噌汁 / Miso soup", unit: "1 bowl (200 ml)", cal: 40, p: 3, c: 5, f: 1 },
+  { name: "納豆 / Natto", unit: "1 pack (50 g)", cal: 100, p: 8.3, c: 6, f: 5 },
+  { name: "焼き鮭 / Grilled salmon", unit: "1 fillet (80 g)", cal: 160, p: 18, c: 0, f: 9 },
+  { name: "鶏の唐揚げ / Karaage", unit: "3 pieces (100 g)", cal: 290, p: 16, c: 12, f: 20 },
+  { name: "親子丼 / Oyakodon", unit: "1 bowl (400 g)", cal: 620, p: 32, c: 80, f: 18 },
+  { name: "牛丼 / Gyudon", unit: "1 bowl (400 g)", cal: 700, p: 22, c: 95, f: 22 },
+  { name: "寿司 (にぎり) / Nigiri sushi", unit: "1 piece", cal: 50, p: 3.5, c: 7, f: 0.5 },
+  { name: "まぐろ刺身 / Tuna sashimi", unit: "5 slices (60 g)", cal: 78, p: 17, c: 0, f: 0.8 },
+  { name: "ラーメン (醤油) / Shoyu ramen", unit: "1 bowl (500 g)", cal: 480, p: 22, c: 65, f: 14 },
+  { name: "うどん (かけ) / Kake udon", unit: "1 bowl (450 g)", cal: 350, p: 11, c: 70, f: 2 },
+  { name: "そば (ざる) / Zaru soba", unit: "1 serving (250 g)", cal: 300, p: 12, c: 60, f: 1.5 },
+  { name: "餃子 / Gyoza", unit: "5 pieces", cal: 230, p: 8, c: 22, f: 12 },
+  { name: "おにぎり (鮭) / Onigiri (salmon)", unit: "1 piece (110 g)", cal: 200, p: 5, c: 38, f: 2.5 },
+  { name: "豆腐 / Tofu (silken)", unit: "100 g", cal: 56, p: 5, c: 1.9, f: 3.2 },
+  { name: "枝豆 / Edamame", unit: "100 g", cal: 122, p: 11, c: 10, f: 5 },
+  { name: "卵焼き / Tamagoyaki", unit: "2 slices (60 g)", cal: 110, p: 7, c: 2, f: 8 },
+  { name: "とんかつ / Tonkatsu", unit: "1 piece (150 g)", cal: 450, p: 23, c: 18, f: 30 },
+  { name: "緑茶 / Green tea", unit: "1 cup (200 ml)", cal: 2, p: 0, c: 0, f: 0 },
+  { name: "抹茶ラテ / Matcha latte", unit: "1 cup (240 ml)", cal: 120, p: 5, c: 17, f: 4 },
 ];
 
 type MealKey = "breakfast" | "lunch" | "snack" | "dinner";
-const MEAL_LABEL: Record<MealKey, string> = {
-  breakfast: "Breakfast", lunch: "Lunch", snack: "Snack", dinner: "Dinner",
-};
+const MEAL_KEYS: MealKey[] = ["breakfast", "lunch", "snack", "dinner"];
 
 type MealEntry = {
   id: string; meal: MealKey; name: string; servings: number;
@@ -61,6 +82,7 @@ type MealEntry = {
 function NutritionPage() {
   const { user } = useAuth();
   const { profile } = useProfile();
+  const { t: tr } = useT();
   const date = todayKey();
   const [log, setLog] = useState<DailyLog | null>(null);
   const [week, setWeek] = useState<DailyLog[]>([]);
@@ -95,6 +117,12 @@ function NutritionPage() {
   }, [entries]);
 
   const t = profile.targets;
+  const MEAL_LABEL: Record<MealKey, string> = {
+    breakfast: tr("nutrition.meal.breakfast"),
+    lunch: tr("nutrition.meal.lunch"),
+    snack: tr("nutrition.meal.snack"),
+    dinner: tr("nutrition.meal.dinner"),
+  };
   const water = log?.water ?? 0;
 
   const persist = async (next: Partial<DailyLog>) => {
@@ -156,9 +184,9 @@ function NutritionPage() {
   }));
 
   const macros = [
-    { name: "Carbs", value: totals.c * 4, color: "oklch(0.7 0.18 290)" },
-    { name: "Protein", value: totals.p * 4, color: "oklch(0.83 0.22 145)" },
-    { name: "Fats", value: totals.f * 9, color: "oklch(0.82 0.17 80)" },
+    { name: tr("nutrition.carbs"), value: totals.c * 4, color: "oklch(0.7 0.18 290)" },
+    { name: tr("nutrition.protein"), value: totals.p * 4, color: "oklch(0.83 0.22 145)" },
+    { name: tr("nutrition.fats"), value: totals.f * 9, color: "oklch(0.82 0.17 80)" },
   ];
   const totalMacroCal = macros.reduce((a, m) => a + m.value, 0);
 
@@ -174,41 +202,41 @@ function NutritionPage() {
     <div className="space-y-6">
       <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:flex sm:flex-wrap sm:justify-between">
         <div className="min-w-0">
-          <h1 className="truncate text-2xl font-black tracking-tight sm:text-3xl">Nutrition</h1>
-          <p className="text-sm text-muted-foreground">Log your meals and track macros for today.</p>
+          <h1 className="truncate text-2xl font-black tracking-tight sm:text-3xl">{tr("nutrition.title")}</h1>
+          <p className="text-sm text-muted-foreground">{tr("nutrition.subtitle")}</p>
         </div>
         {saving && (
           <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border/60 px-2.5 py-1 text-xs text-muted-foreground">
-            <Loader2 className="h-3 w-3 animate-spin" /> Saving
+            <Loader2 className="h-3 w-3 animate-spin" /> {tr("nutrition.saving")}
           </span>
         )}
       </header>
 
       {/* Macro summary */}
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <MacroCard icon={Flame} color="amber" label="Calories" value={totals.cal} goal={t.calories} unit="kcal" />
-        <MacroCard icon={Beef} color="primary" label="Protein" value={Math.round(totals.p)} goal={t.proteinG} unit="g" />
-        <MacroCard icon={Wheat} color="violet" label="Carbs" value={Math.round(totals.c)} goal={t.carbsG} unit="g" />
-        <MacroCard icon={Apple} color="sky" label="Fats" value={Math.round(totals.f)} goal={t.fatsG} unit="g" />
+        <MacroCard icon={Flame} color="amber" label={tr("nutrition.calories")} value={totals.cal} goal={t.calories} unit="kcal" />
+        <MacroCard icon={Beef} color="primary" label={tr("nutrition.protein")} value={Math.round(totals.p)} goal={t.proteinG} unit="g" />
+        <MacroCard icon={Wheat} color="violet" label={tr("nutrition.carbs")} value={Math.round(totals.c)} goal={t.carbsG} unit="g" />
+        <MacroCard icon={Apple} color="sky" label={tr("nutrition.fats")} value={Math.round(totals.f)} goal={t.fatsG} unit="g" />
       </section>
 
       <div className="grid gap-4 lg:grid-cols-3">
         {/* Meals */}
         <section className="rounded-2xl border border-border/60 bg-card/70 p-4 sm:p-5 lg:col-span-2">
           <div className="flex items-center justify-between">
-            <h2 className="font-bold">Today's Meals</h2>
+            <h2 className="font-bold">{tr("nutrition.meals")}</h2>
             <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-              {entries.length} item{entries.length !== 1 ? "s" : ""}
+              {entries.length} {tr("nutrition.items")}
             </span>
           </div>
 
           <Tabs defaultValue="breakfast" className="mt-4">
             <TabsList className="grid w-full grid-cols-4">
-              {(Object.keys(MEAL_LABEL) as MealKey[]).map((k) => (
+              {MEAL_KEYS.map((k) => (
                 <TabsTrigger key={k} value={k} className="text-xs sm:text-sm">{MEAL_LABEL[k]}</TabsTrigger>
               ))}
             </TabsList>
-            {(Object.keys(MEAL_LABEL) as MealKey[]).map((k) => (
+            {MEAL_KEYS.map((k) => (
               <TabsContent key={k} value={k} className="mt-4 space-y-4">
                 <MealList entries={entries.filter((e) => e.meal === k)} onRemove={removeEntry} />
                 <FoodPicker onAdd={(f, s) => addEntry(k, f, s)} />
@@ -222,7 +250,7 @@ function NutritionPage() {
           {/* Water */}
           <div className="rounded-2xl border border-border/60 bg-card/70 p-5">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold">Water</h3>
+              <h3 className="font-bold">{tr("nutrition.water")}</h3>
               <span className="text-xs text-muted-foreground">{water} / {t.waterL} L</span>
             </div>
             <div className="mt-3 grid grid-cols-8 gap-1.5">
@@ -256,7 +284,7 @@ function NutritionPage() {
 
           {/* Macro split */}
           <div className="rounded-2xl border border-border/60 bg-card/70 p-5">
-            <h3 className="font-bold">Macro Split</h3>
+            <h3 className="font-bold">{tr("nutrition.macroSplit")}</h3>
             <div className="mt-2 flex items-center gap-3">
               <div className="h-28 w-28 shrink-0">
                 <ResponsiveContainer width="100%" height="100%">
@@ -288,8 +316,8 @@ function NutritionPage() {
       {/* Weekly */}
       <section className="rounded-2xl border border-border/60 bg-card/70 p-4 sm:p-5">
         <div className="flex items-center justify-between">
-          <h3 className="font-bold">Last 7 Days</h3>
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Calories vs Protein</span>
+          <h3 className="font-bold">{tr("nutrition.last7")}</h3>
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{tr("nutrition.caloriesVsProtein")}</span>
         </div>
         <div className="mt-3 h-56">
           <ResponsiveContainer width="100%" height="100%">
@@ -347,10 +375,11 @@ function MacroCard({
 }
 
 function MealList({ entries, onRemove }: { entries: MealEntry[]; onRemove: (id: string) => void }) {
+  const { t: tr } = useT();
   if (entries.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-border/60 p-6 text-center text-sm text-muted-foreground">
-        No items yet — pick from below.
+        {tr("nutrition.empty")}
       </div>
     );
   }
@@ -364,7 +393,7 @@ function MealList({ entries, onRemove }: { entries: MealEntry[]; onRemove: (id: 
               {e.servings}× &middot; {e.cal} kcal &middot; P {e.p}g &middot; C {e.c}g &middot; F {e.f}g
             </div>
           </div>
-          <Button variant="ghost" size="icon" onClick={() => onRemove(e.id)} aria-label="Remove">
+          <Button variant="ghost" size="icon" onClick={() => onRemove(e.id)} aria-label={tr("nutrition.remove")}>
             <Trash2 className="h-4 w-4 text-muted-foreground" />
           </Button>
         </li>
@@ -374,6 +403,7 @@ function MealList({ entries, onRemove }: { entries: MealEntry[]; onRemove: (id: 
 }
 
 function FoodPicker({ onAdd }: { onAdd: (food: Food, servings: number) => void }) {
+  const { t: tr } = useT();
   const [q, setQ] = useState("");
   const [picked, setPicked] = useState<Food | null>(null);
   const [servings, setServings] = useState("1");
@@ -389,20 +419,20 @@ function FoodPicker({ onAdd }: { onAdd: (food: Food, servings: number) => void }
     <div className="rounded-xl border border-border/60 bg-background/40 p-3">
       <Tabs defaultValue="search">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="search">Search</TabsTrigger>
-          <TabsTrigger value="custom">Custom</TabsTrigger>
+          <TabsTrigger value="search">{tr("nutrition.search")}</TabsTrigger>
+          <TabsTrigger value="custom">{tr("nutrition.custom")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="search" className="mt-3 space-y-3">
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input value={q} onChange={(e) => { setQ(e.target.value); setPicked(null); }}
-              placeholder="Search foods..." className="pl-9" />
+              placeholder={tr("nutrition.searchPlaceholder")} className="pl-9" />
           </div>
           {!picked ? (
             <ul className="max-h-56 space-y-1 overflow-y-auto">
               {matches.length === 0 && (
-                <li className="rounded-md px-3 py-2 text-sm text-muted-foreground">No matches</li>
+                <li className="rounded-md px-3 py-2 text-sm text-muted-foreground">{tr("nutrition.noMatches")}</li>
               )}
               {matches.map((f) => (
                 <li key={f.name}>
@@ -425,12 +455,12 @@ function FoodPicker({ onAdd }: { onAdd: (food: Food, servings: number) => void }
                   <div className="text-[11px] text-muted-foreground">{picked.unit} &middot; {picked.cal} kcal</div>
                 </div>
                 <button type="button" onClick={() => setPicked(null)} className="text-xs text-muted-foreground underline">
-                  Change
+                  {tr("nutrition.change")}
                 </button>
               </div>
               <div className="grid grid-cols-[1fr_auto] gap-2 sm:grid-cols-[1fr_auto_auto]">
                 <div>
-                  <Label className="text-xs">Servings</Label>
+                  <Label className="text-xs">{tr("nutrition.servings")}</Label>
                   <Input type="number" inputMode="decimal" step="0.25" min="0.25"
                     value={servings} onChange={(e) => setServings(e.target.value)} />
                 </div>
@@ -446,7 +476,7 @@ function FoodPicker({ onAdd }: { onAdd: (food: Food, servings: number) => void }
                     setPicked(null); setServings("1"); setQ("");
                   }}
                 >
-                  <Plus className="h-4 w-4" /> Add
+                  <Plus className="h-4 w-4" /> {tr("nutrition.add")}
                 </Button>
               </div>
             </div>
@@ -456,7 +486,7 @@ function FoodPicker({ onAdd }: { onAdd: (food: Food, servings: number) => void }
         <TabsContent value="custom" className="mt-3 space-y-3">
           <div className="grid gap-2 sm:grid-cols-2">
             <div className="sm:col-span-2">
-              <Label className="text-xs">Name</Label>
+              <Label className="text-xs">{tr("nutrition.name")}</Label>
               <Input value={custom.name} onChange={(e) => setCustom({ ...custom, name: e.target.value })} placeholder="Homemade dal" />
             </div>
             <div><Label className="text-xs">Calories</Label>
