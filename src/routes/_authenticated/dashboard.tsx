@@ -134,7 +134,14 @@ function Dashboard() {
           tr={tr}
           onLog={async (patch) => {
             if (!user) return;
-            const merged = { ...(log ?? { date, calories: 0, protein: 0, carbs: 0, fats: 0, water: 0, steps: 0, sleepHours: 0, meals: [] }), ...patch };
+            const base = log ?? { date, calories: 0, protein: 0, carbs: 0, fats: 0, water: 0, steps: 0, sleepHours: 0, meals: [] };
+            const merged = {
+              ...base,
+              calories: (base.calories ?? 0) + (patch.calories ?? 0),
+              protein: (base.protein ?? 0) + (patch.protein ?? 0),
+              steps: (base.steps ?? 0) + (patch.steps ?? 0),
+              water: +((base.water ?? 0) + (patch.water ?? 0)).toFixed(2),
+            };
             await upsertLog(user.uid, date, merged);
             setLog(merged);
             toast.success(tr("dash.logged"));
