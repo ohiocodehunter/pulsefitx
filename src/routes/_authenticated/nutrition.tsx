@@ -375,10 +375,11 @@ function MacroCard({
 }
 
 function MealList({ entries, onRemove }: { entries: MealEntry[]; onRemove: (id: string) => void }) {
+  const { t: tr } = useT();
   if (entries.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-border/60 p-6 text-center text-sm text-muted-foreground">
-        No items yet — pick from below.
+        {tr("nutrition.empty")}
       </div>
     );
   }
@@ -392,7 +393,7 @@ function MealList({ entries, onRemove }: { entries: MealEntry[]; onRemove: (id: 
               {e.servings}× &middot; {e.cal} kcal &middot; P {e.p}g &middot; C {e.c}g &middot; F {e.f}g
             </div>
           </div>
-          <Button variant="ghost" size="icon" onClick={() => onRemove(e.id)} aria-label="Remove">
+          <Button variant="ghost" size="icon" onClick={() => onRemove(e.id)} aria-label={tr("nutrition.remove")}>
             <Trash2 className="h-4 w-4 text-muted-foreground" />
           </Button>
         </li>
@@ -402,6 +403,7 @@ function MealList({ entries, onRemove }: { entries: MealEntry[]; onRemove: (id: 
 }
 
 function FoodPicker({ onAdd }: { onAdd: (food: Food, servings: number) => void }) {
+  const { t: tr } = useT();
   const [q, setQ] = useState("");
   const [picked, setPicked] = useState<Food | null>(null);
   const [servings, setServings] = useState("1");
@@ -417,20 +419,20 @@ function FoodPicker({ onAdd }: { onAdd: (food: Food, servings: number) => void }
     <div className="rounded-xl border border-border/60 bg-background/40 p-3">
       <Tabs defaultValue="search">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="search">Search</TabsTrigger>
-          <TabsTrigger value="custom">Custom</TabsTrigger>
+          <TabsTrigger value="search">{tr("nutrition.search")}</TabsTrigger>
+          <TabsTrigger value="custom">{tr("nutrition.custom")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="search" className="mt-3 space-y-3">
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input value={q} onChange={(e) => { setQ(e.target.value); setPicked(null); }}
-              placeholder="Search foods..." className="pl-9" />
+              placeholder={tr("nutrition.searchPlaceholder")} className="pl-9" />
           </div>
           {!picked ? (
             <ul className="max-h-56 space-y-1 overflow-y-auto">
               {matches.length === 0 && (
-                <li className="rounded-md px-3 py-2 text-sm text-muted-foreground">No matches</li>
+                <li className="rounded-md px-3 py-2 text-sm text-muted-foreground">{tr("nutrition.noMatches")}</li>
               )}
               {matches.map((f) => (
                 <li key={f.name}>
@@ -453,12 +455,12 @@ function FoodPicker({ onAdd }: { onAdd: (food: Food, servings: number) => void }
                   <div className="text-[11px] text-muted-foreground">{picked.unit} &middot; {picked.cal} kcal</div>
                 </div>
                 <button type="button" onClick={() => setPicked(null)} className="text-xs text-muted-foreground underline">
-                  Change
+                  {tr("nutrition.change")}
                 </button>
               </div>
               <div className="grid grid-cols-[1fr_auto] gap-2 sm:grid-cols-[1fr_auto_auto]">
                 <div>
-                  <Label className="text-xs">Servings</Label>
+                  <Label className="text-xs">{tr("nutrition.servings")}</Label>
                   <Input type="number" inputMode="decimal" step="0.25" min="0.25"
                     value={servings} onChange={(e) => setServings(e.target.value)} />
                 </div>
@@ -474,7 +476,7 @@ function FoodPicker({ onAdd }: { onAdd: (food: Food, servings: number) => void }
                     setPicked(null); setServings("1"); setQ("");
                   }}
                 >
-                  <Plus className="h-4 w-4" /> Add
+                  <Plus className="h-4 w-4" /> {tr("nutrition.add")}
                 </Button>
               </div>
             </div>
@@ -484,7 +486,7 @@ function FoodPicker({ onAdd }: { onAdd: (food: Food, servings: number) => void }
         <TabsContent value="custom" className="mt-3 space-y-3">
           <div className="grid gap-2 sm:grid-cols-2">
             <div className="sm:col-span-2">
-              <Label className="text-xs">Name</Label>
+              <Label className="text-xs">{tr("nutrition.name")}</Label>
               <Input value={custom.name} onChange={(e) => setCustom({ ...custom, name: e.target.value })} placeholder="Homemade dal" />
             </div>
             <div><Label className="text-xs">Calories</Label>
