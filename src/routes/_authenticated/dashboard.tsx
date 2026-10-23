@@ -32,8 +32,16 @@ function Dashboard() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      setLog(await getLog(user.uid, date));
-      setWeek(await getRecentLogs(user.uid, 7));
+      try {
+        const [todayLog, recentLogs] = await Promise.all([
+          getLog(user.uid, date),
+          getRecentLogs(user.uid, 7),
+        ]);
+        setLog(todayLog);
+        setWeek(recentLogs);
+      } catch (err) {
+        console.error("Failed to load logs from Firestore:", err);
+      }
     })();
   }, [user, date]);
 

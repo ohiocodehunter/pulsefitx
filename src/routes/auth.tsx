@@ -26,8 +26,14 @@ function AuthPage() {
   useEffect(() => {
     if (loading || !user) return;
     (async () => {
-      const profile = await getProfile(user.uid);
-      navigate({ to: profile?.onboardingComplete ? "/dashboard" : "/onboarding" });
+      try {
+        const profile = await getProfile(user.uid);
+        navigate({ to: profile?.onboardingComplete ? "/dashboard" : "/onboarding" });
+      } catch (e) {
+        console.error("Error reading profile in auth redirect:", e);
+        // Default to onboarding so the user isn't stuck on the auth page
+        navigate({ to: "/onboarding" });
+      }
     })();
   }, [user, loading, navigate]);
 
